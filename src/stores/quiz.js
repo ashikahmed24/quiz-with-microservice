@@ -10,9 +10,13 @@ export const useQuizStore = defineStore('quiz', {
   getters: {},
 
   actions: {
-    async all() {
+    async all(page) {
       try {
-        const response = await apiClient.get(`/api/quizzes`)
+        const response = await apiClient.get(`/api/quizzes`, {
+          params: {
+            page: page,
+          },
+        })
         if (response.status === 200) {
           return Promise.resolve(response)
         }

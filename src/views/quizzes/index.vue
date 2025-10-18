@@ -2,13 +2,14 @@
 import Default from '@/layouts/Default.vue'
 import { ref, onMounted } from 'vue'
 import { useQuizStore } from '@/stores/quiz'
+import IconEllipsis from '@/components/icons/IconEllipsis.vue'
 
 const quizStore = useQuizStore()
 
 const quizzes = ref([])
 
-const loadQuizzes = async () => {
-  const { data } = await quizStore.all()
+const loadQuizzes = async (page = 1) => {
+  const { data } = await quizStore.all(page)
   quizzes.value = data
 }
 
@@ -54,11 +55,18 @@ onMounted(() => {
           <div
             v-for="quiz in quizzes.data"
             :key="quiz.id"
-            class="border border-gray-200 rounded-2xl p-4 transition"
+            class="border border-gray-200 rounded-2xl p-4 transition relative menu-wrapper"
           >
-            <h3 class="font-medium text-gray-800 mb-2">
-              {{ quiz.title }}
-            </h3>
+            <div class="flex items-center justify-between">
+              <h3 class="font-medium text-gray-800 mb-2">
+                {{ quiz.title }}
+              </h3>
+
+              <RouterLink :to="{ name: 'quizzes.edit', params: { id: quiz.id } }">
+                <IconEllipsis class="size-5 text-gray-500" />
+              </RouterLink>
+            </div>
+
             <p class="text-sm text-gray-500 mb-2">
               {{ quiz.description }}
             </p>
@@ -74,9 +82,9 @@ onMounted(() => {
         <!-- Pagination -->
         <div class="flex justify-center items-center mt-8 gap-2">
           <Pagination
-            :total-items="quizzes?.meta?.total"
-            :current-page="quizzes?.meta?.current_page"
-            :items-per-page="quizzes?.meta?.per_page"
+            :total-items="quizzes?.meta?.total ?? 0"
+            :current-page="quizzes?.meta?.current_page ?? 1"
+            :items-per-page="quizzes?.meta?.per_page ?? 10"
             :pages-to-show="1"
             @page-change="loadQuizzes"
             visible-always
