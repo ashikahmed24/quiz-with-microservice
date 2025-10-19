@@ -281,73 +281,44 @@ onMounted(() => {
           <div class="card">
             <div class="card__header">
               <h3 class="card__title">Question Settings</h3>
-              <RouterLink :to="{ name: 'quiz.view', params: { code: quiz.code } }" target="_blank">
+              <RouterLink :to="{ name: 'quiz.view', params: { code: quiz.code } }">
                 Public
               </RouterLink>
             </div>
-            <div class="card__body">
-              <!-- Pagination -->
+            <div class="card__body space-y-4">
               <div class="form__group">
-                <label class="form__label font-medium text-gray-700 mb-2 block">Pagination</label>
-                <div class="flex flex-col gap-2">
-                  <label class="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="pagination"
-                      value="all"
-                      class="form-radio h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <span class="ml-2 text-gray-700">Show all the test questions on one page</span>
-                  </label>
-                  <label class="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="pagination"
-                      value="one"
-                      class="form-radio h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <span class="ml-2 text-gray-700">Show one item per page</span>
-                  </label>
-                </div>
+                <label class="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    name="shuffle_questions"
+                    class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
+                  />
+                  <span class="ml-3 text-gray-700"
+                    >Randomize the order of the questions during the test</span
+                  >
+                </label>
+                <label class="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    name="allow_blank"
+                    class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
+                  />
+                  <span class="ml-3 text-gray-700"
+                    >Allow students to submit blank/empty answers</span
+                  >
+                </label>
+                <label class="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    name="negative_marking"
+                    class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
+                  />
+                  <span class="ml-3 text-gray-700"
+                    >Penalize incorrect answers (negative marking)</span
+                  >
+                </label>
               </div>
-              <!-- Other Settings -->
-              <div class="form__group mt-4">
-                <label class="form__label font-medium text-gray-700 mb-2 block"
-                  >Other Settings</label
-                >
-                <div class="flex flex-col gap-2">
-                  <label class="inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      name="shuffle_questions"
-                      class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <span class="ml-2 text-gray-700"
-                      >Randomize the order of the questions during the test</span
-                    >
-                  </label>
-                  <label class="inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      name="allow_blank"
-                      class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <span class="ml-2 text-gray-700"
-                      >Allow students to submit blank/empty answers</span
-                    >
-                  </label>
-                  <label class="inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      name="negative_marking"
-                      class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <span class="ml-2 text-gray-700"
-                      >Penalize incorrect answers (negative marking)</span
-                    >
-                  </label>
-                </div>
-              </div>
+
               <!-- Notifications -->
               <div class="form__group">
                 <label class="form__label font-medium text-gray-700 mb-2 block"
@@ -361,7 +332,7 @@ onMounted(() => {
                       value="all"
                       class="form-radio h-4 w-4 text-blue-600 border-gray-300"
                     />
-                    <span class="ml-2 text-gray-700">Yes, and send them to:</span>
+                    <span class="ml-3 text-gray-700">Yes, and send them to:</span>
                   </label>
                   <label class="inline-flex items-center">
                     <input
@@ -370,7 +341,7 @@ onMounted(() => {
                       value="one"
                       class="form-radio h-4 w-4 text-blue-600 border-gray-300"
                     />
-                    <span class="ml-2 text-gray-700">No</span>
+                    <span class="ml-3 text-gray-700">No</span>
                   </label>
                 </div>
               </div>

@@ -1,9 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useQuizStore } from '@/stores/quiz'
-import { useRoute } from 'vue-router'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import BaseButton from '@/components/BaseButton.vue'
 
 const quizStore = useQuizStore()
 const route = useRoute()
@@ -23,7 +23,11 @@ const timer = ref(null)
 // --- Computed ---
 const currentQuestion = computed(() => questions.value[currentIndex.value] || {})
 const answered = computed(() => results.value[currentIndex.value] !== undefined)
-//const submitEnabled = computed(() => results.value.length === questions.value.length)
+const formattedTime = computed(() => {
+  const m = Math.floor(timeLeft.value / 60)
+  const s = timeLeft.value % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+})
 
 // --- Load Quiz ---
 const loadQuiz = async () => {
@@ -55,19 +59,15 @@ const startTimer = () => {
     if (timeLeft.value > 0) timeLeft.value--
     else {
       clearInterval(timer.value)
-      submitQuiz(true) // auto-submit when time ends
+      submit(true) // auto-submit when time ends
     }
   }, 1000)
 }
 
-const formattedTime = computed(() => {
-  const m = Math.floor(timeLeft.value / 60)
-  const s = timeLeft.value % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-})
-
 // --- Selection Handler ---
 const select = (index) => {
+  if (answered.value) return // disable after first click
+
   selectedIndex.value = index
 
   // Save answer
@@ -87,19 +87,16 @@ const select = (index) => {
 // --- Navigation ---
 const next = () => {
   if (currentIndex.value < questions.value.length - 1) currentIndex.value++
-  selectedIndex.value = results.value[currentIndex.value]
-    ? questions.value[currentIndex.value].options.findIndex(
-        (o) => o.id === results.value[currentIndex.value].option_id,
-      )
-    : null
+  updateSelectedIndex()
 }
-
 const prev = () => {
   if (currentIndex.value > 0) currentIndex.value--
-  selectedIndex.value = results.value[currentIndex.value]
-    ? questions.value[currentIndex.value].options.findIndex(
-        (o) => o.id === results.value[currentIndex.value].option_id,
-      )
+  updateSelectedIndex()
+}
+const updateSelectedIndex = () => {
+  const ans = results.value[currentIndex.value]
+  selectedIndex.value = ans
+    ? questions.value[currentIndex.value].options.findIndex((o) => o.id === ans.option_id)
     : null
 }
 
@@ -114,50 +111,50 @@ const submit = async () => {
     return total + (selectedOption?.is_correct ? q.mark : 0)
   }, 0)
 
-  // payload for backend
   const payload = {
-    started_at: quiz.value.started_at ?? new Date().toISOString(),
+    started_at: new Date()
+      .toLocaleString('sv-SE', {
+        timeZone: 'Asia/Dhaka',
+        hour12: false,
+      })
+      .replace(' ', 'T'),
     answers: results.value.map((r) => ({
       question_id: r.question_id,
       option_id: r.option_id,
     })),
   }
 
-  const response = await quizStore.submit(quiz.value.id, payload)
-  if (response.status === 200 && response.data.status) {
-    toast.success(response.data.message)
+  try {
+    const response = await quizStore.submit(quiz.value.id, payload)
+    if (response.status === 200 && response.data.status) {
+      toast.success(response.data.message)
 
-    // Success page-এ navigate
-    router.push({
-      name: 'quiz.success',
-      params: { code: quiz.code },
-      query: {
-        score: response.data.data.score,
-        time: response.data.data.time || '00:00:00',
-      },
-    })
+      // Navigate to success page
+      router.push({
+        name: 'quiz.success',
+        params: { code: quiz.value.code },
+        query: {
+          score: response.data.data.score,
+          time: response.data.data.time || formattedTime.value,
+        },
+      })
+    }
+  } catch (err) {
+    toast.error('Failed to submit quiz!')
   }
 }
 
-// --- Styles Helper ---
+// --- Option Styles ---
 const choiceClass = (index) => {
-  if (!answered.value) return 'border-gray-300 hover:border-indigo-400'
-  const ansId = results.value[currentIndex.value]?.option_id
-  if (currentQuestion.value.options[index].is_correct) return 'border-green-500 bg-green-50'
-  if (
-    ansId === currentQuestion.value.options[index].id &&
-    !currentQuestion.value.options[index].is_correct
-  )
-    return 'border-red-500 bg-red-50'
-  return 'border-gray-300'
+  if (!answered.value) return 'cursor-pointer border-gray-300 hover:border-indigo-400'
+  return selectedIndex.value === index
+    ? 'border-indigo-500 bg-indigo-50 cursor-pointer'
+    : 'border-gray-300 cursor-not-allowed'
 }
 
 // --- Lifecycle ---
 onUnmounted(() => clearInterval(timer.value))
-
-onMounted(() => {
-  loadQuiz()
-})
+onMounted(() => loadQuiz())
 </script>
 
 <template>
@@ -171,8 +168,7 @@ onMounted(() => {
         </div>
         <div class="text-right">
           <div class="text-sm text-gray-600">
-            সময় বাকি:
-            <span class="font-semibold text-red-600">{{ formattedTime }}</span>
+            সময় বাকি: <span class="font-semibold text-red-600">{{ formattedTime }}</span>
           </div>
           <div class="text-xs text-gray-500 mt-1">
             প্রশ্ন {{ currentIndex + 1 }} / {{ questions.length }} | স্কোর:
@@ -207,6 +203,7 @@ onMounted(() => {
                 class="w-full text-left p-4 rounded-xl border transition focus:outline-none flex items-center justify-between"
                 :class="choiceClass(index)"
                 @click="select(index)"
+                :disabled="answered"
               >
                 <div class="flex items-center gap-2 truncate">
                   <span class="font-semibold">{{ choice.label }}.</span>
@@ -226,31 +223,19 @@ onMounted(() => {
 
           <!-- Navigation -->
           <div class="mt-8 flex items-center justify-between">
-            <button
-              class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 shadow hover:bg-gray-200"
-              @click="prev"
-              :disabled="currentIndex === 0"
-            >
-              Prev
-            </button>
+            <button class="base__outline" @click="prev" :disabled="currentIndex === 0">Prev</button>
 
             <div>
               <button
                 v-if="currentIndex < questions.length - 1"
-                class="px-5 py-2 rounded-lg bg-indigo-600 text-white shadow hover:bg-indigo-700"
+                class="base__button"
                 @click="next"
                 :disabled="!answered"
               >
                 Next
               </button>
 
-              <button
-                v-else
-                class="px-5 py-2 rounded-lg bg-green-600 text-white shadow hover:bg-green-700"
-                @click="submit"
-              >
-                Submit
-              </button>
+              <BaseButton v-else @click="submit" :loading="quizStore.loading">Submit</BaseButton>
             </div>
           </div>
         </main>

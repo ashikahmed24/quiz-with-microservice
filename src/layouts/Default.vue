@@ -88,7 +88,7 @@ onMounted(() => {
             </div>
 
             <div class="flex-none">
-              <button type="button" class="flex items-center gap-2 cursor-pointer">
+              <button type="button" v-if="user" class="flex items-center gap-2 cursor-pointer">
                 <img :src="user.avatar_url" :alt="user.name" class="w-8 h-8 rounded-full" />
                 <div class="text-left">
                   <p class="text-sm font-semibold">{{ user.name }}</p>
