@@ -67,20 +67,12 @@ export const useQuizStore = defineStore('quiz', {
       }
     },
 
-    async submit(quiz, payload, { toast, router }) {
+    async submit(quiz, payload) {
       this.loading = true
       try {
         const response = await apiClient.post(`/api/quizzes/${quiz}/submit`, payload)
         if (response.status === 200) {
-          toast.success(response.data.message)
-          router.push({
-            name: 'quiz.success',
-            query: {
-              score: response.data.score,
-              time: response.data.time,
-              code: quiz.code,
-            },
-          })
+          return Promise.resolve(response)
         }
       } catch (error) {
         if (error.response) {

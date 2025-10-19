@@ -123,7 +123,20 @@ const submit = async () => {
     })),
   }
 
-  await quizStore.submit(quiz.value.id, payload, { toast, router })
+  const response = await quizStore.submit(quiz.value.id, payload)
+  if (response.status === 200 && response.data.status) {
+    toast.success(response.data.message)
+
+    // Success page-এ navigate
+    router.push({
+      name: 'quiz.success',
+      params: { code: quiz.code },
+      query: {
+        score: response.data.data.score,
+        time: response.data.data.time || '00:00:00',
+      },
+    })
+  }
 }
 
 // --- Styles Helper ---

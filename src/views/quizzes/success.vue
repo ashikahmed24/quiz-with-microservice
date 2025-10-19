@@ -1,41 +1,40 @@
 <script setup>
-import { useRoute, useRouter } from "vue-router";
-import { useToast } from "vue-toastification";
+import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
-const router = useRouter();
-const route = useRoute();
-const toast = useToast();
+const router = useRouter()
+const route = useRoute()
+const toast = useToast()
 
 // Get quiz result from query params
-const score = route.query.score || "0";
-const time = route.query.time || "00:00:00";
-const quizCode = route.query.code || "";
+const score = route.query.score || '0'
+const time = route.query.time || '00:00:00'
+const quizCode = route.query.code || ''
 
 // Optional toast message
 if (route.query.message) {
-  toast.success(route.query.message);
+  toast.success(route.query.message)
 }
 
 const goToDashboard = () => {
-  router.push("/dashboard");
-};
+  router.push('/dashboard')
+}
 
 const retryQuiz = () => {
   if (quizCode) {
-    router.push(`/quiz/${quizCode}`);
+    router.push(`/quiz/${quizCode}`)
   } else {
-    toast.error("Quiz code missing, cannot retry.");
+    toast.error('Quiz code missing, cannot retry.')
   }
-};
+}
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4">
-    
-    {{ route.params }}
-    {{ route.query }}
+  <div
+    class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4 relative"
+  >
     <div
-      class="bg-white shadow-xl rounded-3xl p-8 max-w-md w-full text-center relative overflow-hidden border border-indigo-100"
+      class="bg-white rounded-xl p-8 max-w-md w-full text-center border border-indigo-100 shadow-lg relative overflow-hidden"
     >
       <!-- Animated Checkmark -->
       <div class="flex justify-center mb-6">
@@ -55,16 +54,12 @@ const retryQuiz = () => {
         </div>
       </div>
 
-      <h2 class="text-2xl font-bold text-gray-800 mb-2">
-        🎉 Quiz Submitted Successfully!
-      </h2>
-      <p class="text-gray-600 mb-6">
-        Your result is ready. Check your score and time taken below.
-      </p>
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">🎉 Quiz Submitted!</h2>
+      <p class="text-gray-600 mb-6">Your result is ready. Check your score and time taken below.</p>
 
       <!-- Quiz Result Summary -->
-      <div class="bg-indigo-50 rounded-xl p-4 mb-6">
-        <div class="flex justify-between text-gray-700 text-lg font-medium mb-2">
+      <div class="bg-indigo-50 rounded-xl p-4 mb-6 space-y-2">
+        <div class="flex justify-between text-gray-700 text-lg font-medium">
           <span>Score:</span>
           <span class="font-bold text-indigo-600">{{ score }}</span>
         </div>
@@ -101,4 +96,18 @@ const retryQuiz = () => {
   </div>
 </template>
 
-
+<style scoped>
+/* Optional: smoother bounce animation */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10%);
+  }
+}
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+</style>
