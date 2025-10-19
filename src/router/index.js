@@ -34,7 +34,7 @@ const router = createRouter({
     },
 
     {
-      path: '/quiz/:id',
+      path: '/quiz/:code',
       name: 'quiz.view',
       component: () => import('../views/quizzes/view.vue'),
     },
@@ -43,6 +43,18 @@ const router = createRouter({
       path: '/quiz/:code/success',
       name: 'quiz.success',
       component: () => import('../views/quizzes/success.vue'),
+    },
+
+    {
+      path: '/results',
+      name: 'results',
+      component: () => import('../views/results/index.vue'),
+    },
+
+    {
+      path: '/leaderboards',
+      name: 'leaderboards',
+      component: () => import('../views/leaderboards/index.vue'),
     },
   ],
 })

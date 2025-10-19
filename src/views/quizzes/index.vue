@@ -24,30 +24,8 @@ onMounted(() => {
       <div class="card__header">
         <h3 class="card__title">Quizzes</h3>
         <div class="flex items-center gap-2">
-          <input
-            type="text"
-            placeholder="Szukaj..."
-            class="border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64"
-          />
-          <button
-            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl shadow flex items-center gap-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add quiz
-          </button>
+          <input type="text" placeholder="Search keywords..." class="form__control w-64" />
+          <button type="button" class="base__button">Add Quiz</button>
         </div>
       </div>
       <div class="card__body">
@@ -71,10 +49,10 @@ onMounted(() => {
               {{ quiz.description }}
             </p>
 
-            <div class="flex items-center gap-4 text-sm text-gray-500">
-              <span>{{ quiz.total_points }} পয়েন্ট</span>
+            <div class="flex items-center gap-4">
+              <span class="text-sm text-gray-500">{{ quiz.total_marks }} পয়েন্ট</span>
               <span>•</span>
-              <span>সময়সীমা {{ quiz.time_limit }} মিনিট</span>
+              <span class="text-sm text-gray-500">সময়সীমা {{ quiz.time_limit }} মিনিট</span>
             </div>
           </div>
         </div>

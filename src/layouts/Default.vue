@@ -37,9 +37,14 @@ onMounted(() => {
           <span class="ml-2">Quizzes</span>
         </RouterLink>
 
-        <RouterLink to="/settings" active-class="active" class="nav__item">
+        <RouterLink :to="{ name: 'results' }" active-class="active" class="nav__item">
           <IconHome class="size-5" />
-          <span class="ml-2">Settings</span>
+          <span class="ml-2">Results</span>
+        </RouterLink>
+
+        <RouterLink :to="{ name: 'leaderboards' }" active-class="active" class="nav__item">
+          <IconHome class="size-5" />
+          <span class="ml-2">Leaderboards</span>
         </RouterLink>
 
         <button type="button" @click="cacheClear()" active-class="active" class="nav__item w-full">

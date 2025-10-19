@@ -10,6 +10,7 @@
 @theme {
   --color-background: #020817;
   --color-primary: #615fff;
+  --color-primary-hover: #615fff;
   --color-light: #fff6fa;
   --color-border: #eeeeee;
   --color-success: #0e9a5f;

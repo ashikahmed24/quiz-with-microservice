@@ -5,8 +5,8 @@ import { useRoute } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
-const quizStore = useQuizStore();
-const route = useRoute();
+const quizStore = useQuizStore()
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
@@ -27,199 +27,221 @@ const answered = computed(() => results.value[currentIndex.value] !== undefined)
 
 // --- Load Quiz ---
 const loadQuiz = async () => {
-    const { data } = await quizStore.view(route.params.code);
-    quiz.value = data
+  const { data } = await quizStore.view(route.params.code)
+  quiz.value = data
 
-    questions.value = data.questions.map(q => ({
-            id: q.id,
-            text: q.content,
-            points: q.points,
-            options: q.options.map(o => ({
-                id: o.id,
-                label: o.label,
-                content: o.content,
-                is_correct: o.is_correct
-            })),
-            answer: q.options.findIndex(o => o.is_correct)
-        }))
+  questions.value = data.questions.map((q) => ({
+    id: q.id,
+    text: q.content,
+    mark: q.mark,
+    options: q.options.map((o) => ({
+      id: o.id,
+      label: o.label,
+      content: o.content,
+      is_correct: o.is_correct,
+    })),
+    answer: q.options.findIndex((o) => o.is_correct),
+  }))
 
-        // Set timer
-        timeLeft.value = quiz.value.time_limit * 60
-        startTimer()
+  // Set timer
+  timeLeft.value = quiz.value.time_limit * 60
+  startTimer()
 }
-
 
 // --- Timer ---
 const startTimer = () => {
-    clearInterval(timer.value)
-    timer.value = setInterval(() => {
-        if (timeLeft.value > 0) timeLeft.value--
-        else {
-            clearInterval(timer.value)
-            submitQuiz(true) // auto-submit when time ends
-        }
-    }, 1000)
+  clearInterval(timer.value)
+  timer.value = setInterval(() => {
+    if (timeLeft.value > 0) timeLeft.value--
+    else {
+      clearInterval(timer.value)
+      submitQuiz(true) // auto-submit when time ends
+    }
+  }, 1000)
 }
 
 const formattedTime = computed(() => {
-    const m = Math.floor(timeLeft.value / 60)
-    const s = timeLeft.value % 60
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  const m = Math.floor(timeLeft.value / 60)
+  const s = timeLeft.value % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 })
 
 // --- Selection Handler ---
 const select = (index) => {
-    selectedIndex.value = index
+  selectedIndex.value = index
 
-    // Save answer
-    results.value[currentIndex.value] = {
-        question_id: currentQuestion.value.id,
-        option_id: currentQuestion.value.options[index].id
-    }
+  // Save answer
+  results.value[currentIndex.value] = {
+    question_id: currentQuestion.value.id,
+    option_id: currentQuestion.value.options[index].id,
+  }
 
-    // Update live score
-    score.value = results.value.reduce((total, r, i) => {
-        const q = questions.value[i]
-        const selectedOption = q.options.find(o => o.id === r.option_id)
-        return total + (selectedOption?.is_correct ? q.points : 0)
-    }, 0)
+  // Update live score
+  score.value = results.value.reduce((total, r, i) => {
+    const q = questions.value[i]
+    const selectedOption = q.options.find((o) => o.id === r.option_id)
+    return total + (selectedOption?.is_correct ? q.mark : 0)
+  }, 0)
 }
 
 // --- Navigation ---
 const next = () => {
-    if (currentIndex.value < questions.value.length - 1) currentIndex.value++
-    selectedIndex.value = results.value[currentIndex.value]
-        ? questions.value[currentIndex.value].options.findIndex(o => o.id === results.value[currentIndex.value].option_id)
-        : null
+  if (currentIndex.value < questions.value.length - 1) currentIndex.value++
+  selectedIndex.value = results.value[currentIndex.value]
+    ? questions.value[currentIndex.value].options.findIndex(
+        (o) => o.id === results.value[currentIndex.value].option_id,
+      )
+    : null
 }
 
 const prev = () => {
-    if (currentIndex.value > 0) currentIndex.value--
-    selectedIndex.value = results.value[currentIndex.value]
-        ? questions.value[currentIndex.value].options.findIndex(o => o.id === results.value[currentIndex.value].option_id)
-        : null
+  if (currentIndex.value > 0) currentIndex.value--
+  selectedIndex.value = results.value[currentIndex.value]
+    ? questions.value[currentIndex.value].options.findIndex(
+        (o) => o.id === results.value[currentIndex.value].option_id,
+      )
+    : null
 }
 
 // --- Submit Quiz ---
 const submit = async () => {
-    clearInterval(timer.value)
+  clearInterval(timer.value)
 
-    // final score calculation
-    score.value = results.value.reduce((total, r, i) => {
-        const q = questions.value[i]
-        const selectedOption = q.options.find(o => o.id === r.option_id)
-        return total + (selectedOption?.is_correct ? q.points : 0)
-    }, 0)
+  // final score calculation
+  score.value = results.value.reduce((total, r, i) => {
+    const q = questions.value[i]
+    const selectedOption = q.options.find((o) => o.id === r.option_id)
+    return total + (selectedOption?.is_correct ? q.mark : 0)
+  }, 0)
 
-    // payload for backend
-    const payload = {
-        started_at: quiz.value.started_at ?? new Date().toISOString(),
-        answers: results.value.map(r => ({
-            question_id: r.question_id,
-            option_id: r.option_id
-        })),
-    }
+  // payload for backend
+  const payload = {
+    started_at: quiz.value.started_at ?? new Date().toISOString(),
+    answers: results.value.map((r) => ({
+      question_id: r.question_id,
+      option_id: r.option_id,
+    })),
+  }
 
-   await quizStore.submit(quiz.value.id, payload, { toast, router })
+  await quizStore.submit(quiz.value.id, payload, { toast, router })
 }
 
 // --- Styles Helper ---
 const choiceClass = (index) => {
-    if (!answered.value) return "border-gray-300 hover:border-indigo-400"
-    const ansId = results.value[currentIndex.value]?.option_id
-    if (currentQuestion.value.options[index].is_correct) return "border-green-500 bg-green-50"
-    if (ansId === currentQuestion.value.options[index].id && !currentQuestion.value.options[index].is_correct) return "border-red-500 bg-red-50"
-    return "border-gray-300"
+  if (!answered.value) return 'border-gray-300 hover:border-indigo-400'
+  const ansId = results.value[currentIndex.value]?.option_id
+  if (currentQuestion.value.options[index].is_correct) return 'border-green-500 bg-green-50'
+  if (
+    ansId === currentQuestion.value.options[index].id &&
+    !currentQuestion.value.options[index].is_correct
+  )
+    return 'border-red-500 bg-red-50'
+  return 'border-gray-300'
 }
 
 // --- Lifecycle ---
 onUnmounted(() => clearInterval(timer.value))
 
 onMounted(() => {
-    loadQuiz();
-});
+  loadQuiz()
+})
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-        <div class="w-full max-w-3xl">
-            <!-- Header -->
-            <header class="flex items-center justify-between mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-indigo-600">{{ quiz.title }}</h1>
-                    <p class="text-sm text-gray-500">{{ quiz.description }}</p>
-                </div>
-                <div class="text-right">
-                    <div class="text-sm text-gray-600">
-                        সময় বাকি:
-                        <span class="font-semibold text-red-600">{{ formattedTime }}</span>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">
-                        প্রশ্ন {{ currentIndex + 1 }} / {{ questions.length }} |
-                        স্কোর: <span class="font-semibold text-indigo-600">{{ score }}</span>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Progress Bar -->
-            <div v-if="questions.length" class="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-6">
-                <div :style="{ width: ((currentIndex + 1) / questions.length) * 100 + '%' }"
-                    class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 transition-all"></div>
-            </div>
-
-            <!-- Question Card -->
-            <div v-if="currentQuestion && questions.length">
-                <main class="bg-white rounded-2xl p-6 border border-gray-100">
-                    <!-- Question -->
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold">
-                            প্রশ্ন {{ currentQuestion.id }}: {{ currentQuestion.text }}
-                        </h3>
-                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                            {{ currentQuestion.points }} পয়েন্ট
-                        </span>
-                    </div>
-
-                    <!-- Options -->
-                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <li v-for="(choice, index) in currentQuestion.options" :key="choice.id">
-                            <button
-                                class="w-full text-left p-4 rounded-xl border transition focus:outline-none flex items-center justify-between"
-                                :class="choiceClass(index)" @click="select(index)">
-                                <div class="flex items-center gap-2 truncate">
-                                    <span class="font-semibold">{{ choice.label }}.</span>
-                                    <span>{{ choice.content }}</span>
-                                </div>
-                                <span v-if="answered && choice.is_correct" class="text-green-600 font-bold">✔</span>
-                                <span v-if="answered && selectedIndex === index && !choice.is_correct"
-                                    class="text-red-600 font-bold">✘</span>
-                            </button>
-                        </li>
-                    </ul>
-
-                    <!-- Navigation -->
-                    <div class="mt-8 flex items-center justify-between">
-                        <button class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 shadow hover:bg-gray-200"
-                            @click="prev" :disabled="currentIndex === 0">
-                            Prev
-                        </button>
-
-                        <div>
-                            <button v-if="currentIndex < questions.length - 1"
-                                class="px-5 py-2 rounded-lg bg-indigo-600 text-white shadow hover:bg-indigo-700"
-                                @click="next" :disabled="!answered">
-                                Next
-                            </button>
-
-                            <button v-else
-                                class="px-5 py-2 rounded-lg bg-green-600 text-white shadow hover:bg-green-700"
-                                @click="submit">
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                </main>
-            </div>
+  <div class="min-h-screen bg-[url(/bg-quiz.jpg)] bg-cover flex items-center justify-center p-4">
+    <div class="w-full bg-gray-100 max-w-3xl p-6 rounded-xl">
+      <!-- Header -->
+      <header class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-indigo-600">{{ quiz.title }}</h1>
+          <p class="text-sm text-gray-500">{{ quiz.description }}</p>
         </div>
+        <div class="text-right">
+          <div class="text-sm text-gray-600">
+            সময় বাকি:
+            <span class="font-semibold text-red-600">{{ formattedTime }}</span>
+          </div>
+          <div class="text-xs text-gray-500 mt-1">
+            প্রশ্ন {{ currentIndex + 1 }} / {{ questions.length }} | স্কোর:
+            <span class="font-semibold text-indigo-600">{{ score }}</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Progress Bar -->
+      <div v-if="questions.length" class="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-6">
+        <div
+          :style="{ width: ((currentIndex + 1) / questions.length) * 100 + '%' }"
+          class="h-full bg-gradient-to-r from-indigo-500 to-pink-500 transition-all"
+        ></div>
+      </div>
+
+      <!-- Question Card -->
+      <div v-if="currentQuestion && questions.length">
+        <main class="bg-white rounded-2xl p-6 border border-gray-100">
+          <!-- Question -->
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold">প্রশ্ন {{ currentQuestion.id }}: {{ currentQuestion.text }}</h3>
+            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+              {{ currentQuestion.mark }} পয়েন্ট
+            </span>
+          </div>
+
+          <!-- Options -->
+          <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <li v-for="(choice, index) in currentQuestion.options" :key="choice.id">
+              <button
+                class="w-full text-left p-4 rounded-xl border transition focus:outline-none flex items-center justify-between"
+                :class="choiceClass(index)"
+                @click="select(index)"
+              >
+                <div class="flex items-center gap-2 truncate">
+                  <span class="font-semibold">{{ choice.label }}.</span>
+                  <span>{{ choice.content }}</span>
+                </div>
+                <span v-if="answered && choice.is_correct" class="text-green-600 font-bold"
+                  >✔</span
+                >
+                <span
+                  v-if="answered && selectedIndex === index && !choice.is_correct"
+                  class="text-red-600 font-bold"
+                  >✘</span
+                >
+              </button>
+            </li>
+          </ul>
+
+          <!-- Navigation -->
+          <div class="mt-8 flex items-center justify-between">
+            <button
+              class="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 shadow hover:bg-gray-200"
+              @click="prev"
+              :disabled="currentIndex === 0"
+            >
+              Prev
+            </button>
+
+            <div>
+              <button
+                v-if="currentIndex < questions.length - 1"
+                class="px-5 py-2 rounded-lg bg-indigo-600 text-white shadow hover:bg-indigo-700"
+                @click="next"
+                :disabled="!answered"
+              >
+                Next
+              </button>
+
+              <button
+                v-else
+                class="px-5 py-2 rounded-lg bg-green-600 text-white shadow hover:bg-green-700"
+                @click="submit"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
+  </div>
 </template>
