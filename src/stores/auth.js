@@ -45,6 +45,7 @@ export const useAuthStore = defineStore('auth', {
         const response = await apiClient.post(`/api/auth/register`, form)
         if (response.status === 200) {
           this.token = response.data?.token
+          localStorage.setItem('token', response.data.token)
         }
         return Promise.resolve(response)
       } catch (error) {

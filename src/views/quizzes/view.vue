@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useQuizStore } from '@/stores/quiz'
 import { useRoute, useRouter } from 'vue-router'
 import AuthOverlay from '@/components/AuthOverlay.vue'
@@ -12,19 +12,37 @@ const router = useRouter()
 const quiz = ref(null)
 const errors = ref(null)
 
+// state to toggle overlay
+const showAuthOverlay = ref(false)
+
 const loadQuiz = async () => {
   const response = await quizStore.view(route.params.code)
   quiz.value = response.data
+}
+
+const startQuiz = async () => {
+  // check login or token first
+  if (!authStore.token) {
+    showAuthOverlay.value = true
+    return
+  }
+
+  const { data } = await quizStore.start(route.params.code)
+  router.push({ name: 'quiz.start', params: { code: data.code } })
 }
 
 onMounted(() => {
   loadQuiz()
 })
 
-const startQuiz = async () => {
-  const { data } = await quizStore.start(route.params.code)
-  router.push({ name: 'quiz.start', params: { code: data.code } })
-}
+watch(
+  () => authStore.token,
+  (token) => {
+    if (token) {
+      showAuthOverlay.value = false
+    }
+  },
+)
 </script>
 
 <template>
@@ -44,7 +62,7 @@ const startQuiz = async () => {
         <span v-else>Start Quiz</span>
       </button>
 
-      <AuthOverlay v-if="!authStore.loggedIn" />
+      <AuthOverlay v-if="showAuthOverlay" @close="showAuthOverlay = false" />
 
       <p v-if="errors" class="text-red-500 mt-4">{{ errors }}</p>
       <p v-if="errors" class="text-green-600 mt-4">Quiz Started Successfully!</p>
