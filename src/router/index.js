@@ -59,6 +59,12 @@ const router = createRouter({
     },
 
     {
+      path: '/quizzes/:code/start',
+      name: 'quiz.start',
+      component: () => import('../views/quizzes/start.vue'),
+    },
+
+    {
       path: '/quiz/:code/success',
       name: 'quiz.success',
       component: () => import('../views/quizzes/success.vue'),

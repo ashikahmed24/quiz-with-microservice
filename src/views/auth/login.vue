@@ -18,7 +18,8 @@ const form = reactive({
 })
 
 const submit = async () => {
-  const response = await authStore.login(form, { toast, router })
+  const { data } = await authStore.login(form)
+  console.log(data)
 }
 </script>
 

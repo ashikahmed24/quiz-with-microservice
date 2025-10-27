@@ -142,7 +142,7 @@
 
 
   .form__label {
-    @apply block text-sm text-dark mb-1 capitalize font-medium;
+    @apply block text-sm text-dark mb-1 capitalize font-medium text-left;
 
   }
 

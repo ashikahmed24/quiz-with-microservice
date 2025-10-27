@@ -87,8 +87,9 @@ export const useQuizStore = defineStore('quiz', {
     },
 
     async start(quiz) {
+      this.loading = true
       try {
-        const response = await apiClient.get(`/api/quizzes/${quiz}/start`)
+        const response = await apiClient.post(`/api/quizzes/${quiz}/start`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
@@ -96,6 +97,8 @@ export const useQuizStore = defineStore('quiz', {
         if (error.response) {
           return Promise.reject(error.response)
         }
+      } finally {
+        this.loading = false
       }
     },
 
@@ -104,7 +107,7 @@ export const useQuizStore = defineStore('quiz', {
       try {
         const response = await apiClient.post(`/api/quizzes/${quiz}/submit`, payload)
         if (response.status === 200) {
-          return Promise.resolve(response)
+          return Promise.resolve(response.data)
         }
       } catch (error) {
         if (error.response) {

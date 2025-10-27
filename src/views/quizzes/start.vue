@@ -31,7 +31,7 @@ const formattedTime = computed(() => {
 
 // --- Load Quiz ---
 const loadQuiz = async () => {
-  const { data } = await quizStore.view(route.params.code)
+  const { data } = await quizStore.start(route.params.code)
   quiz.value = data
 
   questions.value = data.questions.map((q) => ({
@@ -124,23 +124,20 @@ const submit = async () => {
     })),
   }
 
-  try {
-    const response = await quizStore.submit(quiz.value.id, payload)
-    if (response.status === 200 && response.data.status) {
-      toast.success(response.data.message)
+  const response = await quizStore.submit(quiz.value.code, payload)
 
-      // Navigate to success page
-      router.push({
-        name: 'quiz.success',
-        params: { code: quiz.value.code },
-        query: {
-          score: response.data.data.score,
-          time: response.data.data.time || formattedTime.value,
-        },
-      })
-    }
-  } catch (err) {
-    toast.error('Failed to submit quiz!')
+  if (response.success) {
+    toast.success(response.message)
+
+    // Navigate to success page
+    router.push({
+      name: 'quiz.success',
+      params: { code: response.data?.quiz?.code },
+      query: {
+        score: response.data.score,
+        time: response.data.duration_formatted,
+      },
+    })
   }
 }
 

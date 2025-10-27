@@ -64,25 +64,15 @@ const retryQuiz = () => {
           <span class="font-bold text-indigo-600">{{ score }}</span>
         </div>
         <div class="flex justify-between text-gray-700 text-lg font-medium">
-          <span>Time Taken:</span>
+          <span>Duration:</span>
           <span class="font-bold text-indigo-600">{{ time }}</span>
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex flex-col sm:flex-row gap-3">
-        <button
-          @click="goToDashboard"
-          class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-all duration-200"
-        >
-          Go to Dashboard
-        </button>
-        <button
-          @click="retryQuiz"
-          class="flex-1 border border-indigo-300 hover:bg-indigo-50 text-indigo-600 font-semibold py-3 rounded-xl transition-all duration-200"
-        >
-          Retry Quiz
-        </button>
+      <div class="w-full text-center space-x-4">
+        <button class="base__button">Go to Dashboard</button>
+        <button class="base__outline">Retry Quiz</button>
       </div>
     </div>
 

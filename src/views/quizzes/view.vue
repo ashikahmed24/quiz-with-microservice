@@ -1,10 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useQuizStore } from '@/stores/quiz'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import AuthOverlay from '@/components/AuthOverlay.vue'
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
 const quizStore = useQuizStore()
 const route = useRoute()
+const router = useRouter()
 const quiz = ref(null)
 const errors = ref(null)
 
@@ -18,7 +22,8 @@ onMounted(() => {
 })
 
 const startQuiz = async () => {
-  await quizStore.start(route.params.code)
+  const { data } = await quizStore.start(route.params.code)
+  router.push({ name: 'quiz.start', params: { code: data.code } })
 }
 </script>
 
@@ -38,6 +43,8 @@ const startQuiz = async () => {
         <span v-if="quizStore.loading" class="animate-pulse">Starting...</span>
         <span v-else>Start Quiz</span>
       </button>
+
+      <AuthOverlay v-if="!authStore.loggedIn" />
 
       <p v-if="errors" class="text-red-500 mt-4">{{ errors }}</p>
       <p v-if="errors" class="text-green-600 mt-4">Quiz Started Successfully!</p>

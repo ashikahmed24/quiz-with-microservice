@@ -21,18 +21,15 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async login(payload, { toast, router }) {
+    async login(formData) {
       this.loading = true
       try {
-        const response = await apiClient.post(`/api/auth/login`, payload)
+        const response = await apiClient.post(`/api/auth/login`, formData)
         if (response.status === 200) {
           this.token = response.data?.token
           this.user = response.data?.user
-          toast.success(response.data.message)
-          router.push({
-            name: 'home',
-          })
         }
+        return Promise.resolve(response)
       } catch (error) {
         if (error.response) {
           return Promise.reject(error.response)

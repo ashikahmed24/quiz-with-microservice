@@ -75,7 +75,7 @@ onMounted(() => {
                 <input type="number" v-model.number="form.passing_marks" class="form__control" />
               </div>
               <div class="form__group">
-                <label class="form__label">Time Limit (min)</label>
+                <label class="form__label">Duration (min)</label>
                 <input type="number" v-model.number="form.time_limit" class="form__control" />
               </div>
             </div>

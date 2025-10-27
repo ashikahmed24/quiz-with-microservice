@@ -347,6 +347,7 @@ onMounted(() => {
             <RouterLink
               v-if="quiz && quiz.code"
               :to="{ name: 'quiz.view', params: { code: quiz.code } }"
+              target="_blank"
               class="text-sm text-primary hover:underline"
             >
               Public View
