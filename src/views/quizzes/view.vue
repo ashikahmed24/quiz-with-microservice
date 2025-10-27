@@ -47,25 +47,45 @@ watch(
 
 <template>
   <div class="min-h-screen bg-[url(/bg-quiz.jpg)] bg-cover flex items-center justify-center p-4">
-    <div v-if="quiz" class="w-full bg-gray-100 max-w-3xl text-center p-6 rounded-xl">
-      <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ quiz.title }}</h3>
-      <p class="text-gray-500 mb-4">{{ quiz.description }}</p>
+    <template v-if="authStore.loading">Loading...</template>
+    <template v-else-if="quiz">
+      <div class="w-full bg-gray-100 max-w-3xl text-center p-6 rounded-xl">
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ quiz.title }}</h3>
+        <p class="text-gray-500 mb-4">{{ quiz.description }}</p>
 
-      <div class="text-sm text-gray-600 mb-6">
-        <p><strong>Total Marks:</strong> {{ quiz.total_marks }}</p>
-        <p><strong>Passing Marks:</strong> {{ quiz.passing_marks }}</p>
-        <p><strong>Time Limit:</strong> {{ quiz.time_limit }} mins</p>
+        <div class="text-sm text-gray-600 mb-6">
+          <p><strong>Total Marks:</strong> {{ quiz.total_marks }}</p>
+          <p><strong>Passing Marks:</strong> {{ quiz.passing_marks }}</p>
+          <p><strong>Time Limit:</strong> {{ quiz.time_limit }} mins</p>
+        </div>
+
+        <button @click="startQuiz" :disabled="quizStore.loading" class="base__button">
+          <span v-if="quizStore.loading" class="animate-pulse">Starting...</span>
+          <span v-else>Start Quiz</span>
+        </button>
+
+        <AuthOverlay v-if="showAuthOverlay" @close="showAuthOverlay = false" />
+
+        <p v-if="errors" class="text-red-500 mt-4">{{ errors }}</p>
+        <p v-if="errors" class="text-green-600 mt-4">Quiz Started Successfully!</p>
       </div>
-
-      <button @click="startQuiz" :disabled="quizStore.loading" class="base__button">
-        <span v-if="quizStore.loading" class="animate-pulse">Starting...</span>
-        <span v-else>Start Quiz</span>
-      </button>
-
-      <AuthOverlay v-if="showAuthOverlay" @close="showAuthOverlay = false" />
-
-      <p v-if="errors" class="text-red-500 mt-4">{{ errors }}</p>
-      <p v-if="errors" class="text-green-600 mt-4">Quiz Started Successfully!</p>
-    </div>
+    </template>
+    <template v-else>
+      <div class="w-full bg-gray-100 max-w-3xl text-center p-6 rounded-xl">
+        <div class="p-10 text-center">
+          <h1 class="text-6xl font-bold text-red-500 mb-4">404</h1>
+          <h2 class="text-2xl font-semibold mb-4">Quiz Not Found</h2>
+          <p class="text-gray-600 mb-6">
+            Sorry, the quiz you are looking for does not exist or has been removed.
+          </p>
+          <router-link
+            to="/"
+            class="inline-block bg-red-500 text-white px-6 py-2 rounded-full font-medium hover:bg-red-600 transition"
+          >
+            Go Home
+          </router-link>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
