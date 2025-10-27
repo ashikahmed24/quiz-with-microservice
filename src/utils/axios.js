@@ -37,9 +37,6 @@ apiClient.interceptors.response.use(
 
       // Optional: show a toast/alert before redirect
       alert('Session expired. Please log in again.')
-
-      // Use replace so user can’t go back to protected route
-      window.location.replace('/auth/login')
     }
 
     if (error.response?.status >= 500) {
