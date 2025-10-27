@@ -39,6 +39,24 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async register(form) {
+      this.loading = true
+      try {
+        const response = await apiClient.post(`/api/auth/register`, form)
+        if (response.status === 200) {
+          this.token = response.data?.token
+        }
+        return Promise.resolve(response)
+      } catch (error) {
+        if (error.response) {
+          this.errors = error.response.data.errors
+          return Promise.reject(error.response)
+        }
+      } finally {
+        this.loading = false
+      }
+    },
+
     async logout() {
       this.loading = true
       try {

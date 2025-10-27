@@ -5,15 +5,13 @@ import { useAuthStore } from '@/stores/auth.js'
 import BaseInput from '@/components/BaseInput.vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
 
 const router = useRouter()
-const toast = useToast()
 const authStore = useAuthStore()
 const { errors } = storeToRefs(authStore)
 
 const form = reactive({
-  email: 'info@ashikahmed.net',
+  email: 'admin@ashikahmed.net',
   password: 'password',
 })
 
