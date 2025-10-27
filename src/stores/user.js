@@ -1,7 +1,7 @@
 import apiClient from '@/utils/axios'
 import { defineStore } from 'pinia'
 
-export const useQuestionStore = defineStore('question', {
+export const useUserStore = defineStore('user', {
   state: () => ({
     errors: {},
     loading: false,
@@ -10,9 +10,13 @@ export const useQuestionStore = defineStore('question', {
   getters: {},
 
   actions: {
-    async all(quiz) {
+    async all(page) {
       try {
-        const response = await apiClient.get(`/api/quizzes/${quiz}/questions`)
+        const response = await apiClient.get(`/api/users`, {
+          params: {
+            page: page,
+          },
+        })
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
@@ -21,24 +25,26 @@ export const useQuestionStore = defineStore('question', {
       }
     },
 
-    async store(quiz, question) {
-      try {
-        const response = await apiClient.post(`/api/quizzes/${quiz}/questions`, question)
-        if (response.status === 200) {
-          return Promise.resolve(response.data)
-        }
-      } catch (error) {
-        return Promise.reject(error.response)
-      }
-    },
-
-    async update(quiz, question) {
+    async store(from, { router, toast }) {
       this.loading = true
       try {
-        const response = await apiClient.put(
-          `/api/quizzes/${quiz}/questions/${question.id}`,
-          question,
-        )
+        const response = await apiClient.post(`/api/users`, from)
+        if (response.status === 201) {
+          toast.success(response.data.message)
+          router.push({ name: 'categories' })
+          return Promise.resolve(response.data)
+        }
+      } catch (error) {
+        return Promise.reject(error.response)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async update(user, form) {
+      this.loading = true
+      try {
+        const response = await apiClient.put(`/api/users/${user}`, form)
         if (response.status === 200) {
           return Promise.resolve(response)
         }
@@ -49,20 +55,9 @@ export const useQuestionStore = defineStore('question', {
       }
     },
 
-    async delete(quiz, question) {
+    async delete(user) {
       try {
-        const response = await apiClient.delete(`quizzes/${quiz}/questions/${question}`)
-        if (response.status === 200) {
-          return Promise.resolve(response.data)
-        }
-      } catch (error) {
-        return Promise.reject(error.response)
-      }
-    },
-
-    async dragged(quiz) {
-      try {
-        const response = await apiClient.post(`quizzes/${quiz}/questions/dragged`)
+        const response = await apiClient.delete(`api/users/${user}`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }

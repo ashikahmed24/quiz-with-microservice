@@ -60,7 +60,7 @@
   }
 
   .badge {
-    @apply px-2 py-0.5 rounded cursor-pointer;
+    @apply px-4 text-sm py-0.5 rounded-full cursor-pointer;
   }
 
   .badge__primary {

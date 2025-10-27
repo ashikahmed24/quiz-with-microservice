@@ -3,47 +3,100 @@ import BaseButton from '@/components/BaseButton.vue'
 import Default from '@/layouts/Default.vue'
 import { useQuizStore } from '@/stores/quiz'
 import { useQuestionStore } from '@/stores/question'
-import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
+import { onMounted, reactive, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import IconX from '@/components/icons/IconX.vue'
+import { debounce } from 'lodash'
+import IconLoading from '@/components/icons/IconLoading.vue'
 
 const quizStore = useQuizStore()
 const questionStore = useQuestionStore()
 const route = useRoute()
-const toast = useToast()
+
+const form = reactive({
+  code: '',
+  title: '',
+  description: '',
+  total_marks: 0,
+  passing_marks: 0,
+  time_limit: 0,
+  start_time: '',
+  end_time: '',
+  is_active: false,
+  shuffle: false,
+  allow_blank: false,
+  negative_marking: false,
+  email_notify: false,
+})
+
+const quizUpdate = async () => {
+  await quizStore.update(route.params.id, form)
+}
 
 const quiz = ref(null)
 const questions = ref([])
+const message = ref(null)
 
+// Load quiz
 const loadQuiz = async () => {
   const response = await quizStore.show(route.params.id)
   quiz.value = response.data
-}
-
-const loadQuestions = async () => {
-  const response = await questionStore.questions(route.params.id)
-  questions.value = response.data
-}
-
-// Add a new choice to a question (for MCQ)
-const addChoice = (questionId) => {
-  const question = questions.value.find((q) => q.id === questionId)
-  if (!question) return
-
-  question.options.push({
-    id: Date.now(),
-    content: '',
-    is_correct: false,
+  Object.assign(form, {
+    code: response.data.code,
+    title: response.data.title,
+    description: response.data.description,
+    total_marks: response.data.total_marks,
+    passing_marks: response.data.passing_marks,
+    time_limit: response.data.time_limit,
+    start_time: response.data.start_time,
+    end_time: response.data.end_time,
+    is_active: !!response.data.is_active,
+    shuffle: !!response.data.shuffle,
+    allow_blank: !!response.data.allow_blank,
+    negative_marking: !!response.data.negative_marking,
+    email_notify: !!response.data.email_notify,
   })
 }
 
-// Update option content
+// Load questions
+const loadQuestions = async () => {
+  const response = await questionStore.all(route.params.id)
+  questions.value = response.data
+}
+
+// Auto-save with debounce
+const autoSave = debounce(async (question) => {
+  try {
+    await questionStore.update(route.params.id, question)
+    message.value = 'Question auto-saved!'
+  } catch {
+    message.value = 'Auto-save failed'
+  }
+}, 1000)
+
+// Add this function here
+const toggleCorrectAnswer = (questionId, optionId) => {
+  const q = questions.value.find((q) => q.id === questionId)
+  if (!q) return
+  q.options.forEach((opt) => (opt.is_correct = opt.id === optionId))
+  autoSave(q)
+}
+
+// Add new option
+const addChoice = (questionId) => {
+  const q = questions.value.find((q) => q.id === questionId)
+  if (!q) return
+  q.options.push({ id: crypto.randomUUID(), content: '', is_correct: false })
+  autoSave(q)
+}
+
+// Update option
 const updateChoice = (questionId, optionId, value) => {
   const q = questions.value.find((q) => q.id === questionId)
   if (!q) return
   const opt = q.options.find((o) => o.id === optionId)
   if (opt) opt.content = value
+  autoSave(q)
 }
 
 // Remove option
@@ -51,68 +104,63 @@ const removeChoice = (questionId, optionId) => {
   const q = questions.value.find((q) => q.id === questionId)
   if (!q) return
   q.options = q.options.filter((o) => o.id !== optionId)
+  autoSave(q)
 }
 
-// Add a new question
+// Add new question
 const addQuestion = async () => {
   const newQuestion = {
-    content: 'title',
+    content: 'New Question',
     type: 'mcq',
-    mark: 5,
+    mark: 2,
     negative_mark: 1,
     time_limit: 60,
     hasExplanation: false,
     explanation: '',
     options: [
-      { content: 'option', is_correct: false },
-      { content: 'option', is_correct: true },
-      { content: 'option', is_correct: false },
-      { content: 'option', is_correct: false },
+      { id: crypto.randomUUID(), content: 'Option A', is_correct: false },
+      { id: crypto.randomUUID(), content: 'Option B', is_correct: true },
+      { id: crypto.randomUUID(), content: 'Option C', is_correct: false },
+      { id: crypto.randomUUID(), content: 'Option D', is_correct: false },
     ],
   }
 
   await questionStore.store(route.params.id, newQuestion)
   await loadQuestions()
+  message.value = 'Question added!'
 }
 
-const removeQuestion = async (question) => {
-  if (confirm('Are you sure you went to deleted this question?')) {
-    await questionStore.delete(route.params.id, question)
-  }
-}
-
-// Update question type dynamically
+// Change question type
 const updateQuestionType = (question) => {
   switch (question.type) {
     case 'mcq':
-      question.options =
-        question.options.length >= 4
-          ? question.options
-          : [
-              { id: Date.now() + 1, content: '', is_correct: false },
-              { id: Date.now() + 2, content: '', is_correct: false },
-              { id: Date.now() + 3, content: '', is_correct: false },
-              { id: Date.now() + 4, content: '', is_correct: false },
-            ]
+      if (!question.options || question.options.length < 4) {
+        question.options = Array.from({ length: 4 }, (_, i) => ({
+          id: crypto.randomUUID(),
+          content: '',
+          is_correct: false,
+        }))
+      }
       break
     case 'true_false':
       question.options = [
-        { id: Date.now() + 1, content: 'True', is_correct: false },
-        { id: Date.now() + 2, content: 'False', is_correct: false },
+        { id: crypto.randomUUID(), content: 'True', is_correct: false },
+        { id: crypto.randomUUID(), content: 'False', is_correct: false },
       ]
       break
     default:
-      question.options = [{ id: Date.now() + 1, content: '', is_correct: false }] // short_answer or fill_blank
+      question.options = [{ id: crypto.randomUUID(), content: '', is_correct: false }]
   }
+  autoSave(question)
 }
 
 // Submit quiz
 const submitQuiz = async () => {
   try {
-    await quizStore.updateQuestions(route.params.id, questions.value)
-    toast.success('Quiz updated successfully')
-  } catch (err) {
-    toast.error('Failed to submit quiz')
+    await quizStore.update(route.params.id, { ...form, id: quiz.value.id })
+    message.value = 'Quiz updated!'
+  } catch {
+    message.value = 'Failed to update quiz'
   }
 }
 
@@ -124,30 +172,51 @@ onMounted(() => {
 
 <template>
   <Default>
+    <div
+      class="max-w-3xl flex items-center justify-center gap-2 mt-1 ml-2 text-xs text-gray-500 transition-all duration-300"
+    >
+      <!-- Loading Spinner -->
+      <div v-if="questionStore.loading" class="flex items-center gap-2 animate-pulse">
+        <IconLoading class="size-4" />
+        <span>Saving changes...</span>
+      </div>
+
+      <!-- Saved Message -->
+      <transition name="fade">
+        <div
+          v-if="!questionStore.loading && message"
+          class="flex items-center gap-1 text-green-600 font-medium"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="w-4 h-4 text-green-500"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>{{ message }}</span>
+        </div>
+      </transition>
+    </div>
+
     <div class="flex items-start justify-between gap-6">
-      <!-- Main Quiz Editor -->
+      <!-- Main Editor -->
       <div class="grow bg-white rounded-xl p-6">
         <header
           v-if="quiz"
           class="bg-white flex items-center justify-between border-b border-border py-2 mb-6"
         >
           <div>
-            <h1 class="text-2xl font-semibold text-gray-800 mb-1">{{ quiz.title }}</h1>
+            <h1 class="text-2xl font-semibold text-gray-800 mb-1">
+              {{ quiz.title }}
+            </h1>
             <p class="text-gray-500 text-sm">{{ quiz.description }}</p>
           </div>
-          <div class="flex-none text-gray-600 text-sm">
-            <div class="flex items-center gap-4">
-              <div><span class="font-medium">Total Marks:</span> {{ quiz.total_marks }}</div>
-              <div><span class="font-medium">Passing Marks:</span> {{ quiz.passing_marks }}</div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div><span class="font-medium">Time:</span> {{ quiz.time_limit }} min</div>
-              <div><span class="font-medium">Shuffle:</span> {{ quiz.shuffle ? 'Yes' : 'No' }}</div>
-              <div>
-                <span class="font-medium">Active:</span> {{ quiz.is_active ? 'Yes' : 'No' }}
-              </div>
-            </div>
-          </div>
+          <span v-if="quiz.published" class="badge badge__success">Published</span>
+          <span v-else class="badge badge__danger">Unpublished</span>
         </header>
 
         <article>
@@ -160,26 +229,25 @@ onMounted(() => {
             <div class="flex items-end justify-between gap-4 mb-4">
               <div class="grow">
                 <div class="form__group">
-                  <label class="form__label">
-                    {{ index + 1 }} Question: {{ question.content }}</label
-                  >
+                  <label class="form__label"> {{ index + 1 }}. Question: </label>
                   <input
                     type="text"
                     v-model="question.content"
-                    placeholder="Question title"
+                    @input="autoSave(question)"
+                    placeholder="Write question..."
                     class="form__control"
                   />
                 </div>
               </div>
 
               <div class="flex gap-2 items-center">
-                <!-- Question Type Selector -->
-                <div class="">
-                  <label class="form__label">Question Type</label>
+                <!-- Type -->
+                <div class="form__group">
+                  <label class="form__label">Type</label>
                   <select
                     v-model="question.type"
-                    class="form__control"
                     @change="updateQuestionType(question)"
+                    class="form__control"
                   >
                     <option value="mcq">Multiple Choice</option>
                     <option value="true_false">True / False</option>
@@ -188,26 +256,21 @@ onMounted(() => {
                   </select>
                 </div>
 
-                <!-- Points -->
-                <div class="w-20">
+                <!-- Marks -->
+                <div class="form__group w-20">
                   <label class="form__label">Mark</label>
                   <input
                     type="number"
                     v-model.number="question.mark"
                     min="1"
                     class="form__control"
+                    @input="autoSave(question)"
                   />
                 </div>
-                <button
-                  @click.prevent="removeQuestion(question.id)"
-                  class="bg-gray-100 text-danger px-4 py-2 rounded cursor-pointer"
-                >
-                  Delete
-                </button>
               </div>
             </div>
 
-            <!-- Options (hidden for short_answer & fill_blank) -->
+            <!-- Options -->
             <div v-if="question.options.length">
               <div
                 v-for="(option, oIndex) in question.options"
@@ -219,7 +282,7 @@ onMounted(() => {
                   type="radio"
                   :name="'q' + question.id"
                   :checked="option.is_correct"
-                  @change="quizStore.toggleCorrectAnswer(question.id, option.id)"
+                  @change="toggleCorrectAnswer(question.id, option.id)"
                   class="form__radio"
                 />
                 <input
@@ -227,11 +290,7 @@ onMounted(() => {
                   v-model="option.content"
                   @input="updateChoice(question.id, option.id, $event.target.value)"
                   class="form__control"
-                  :placeholder="
-                    question.type === 'mcq'
-                      ? 'Option ' + String.fromCharCode(65 + oIndex)
-                      : option.content
-                  "
+                  :placeholder="`Option ${String.fromCharCode(65 + oIndex)}`"
                 />
                 <button
                   v-if="question.type === 'mcq'"
@@ -243,16 +302,20 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- Add Choice & Explanation -->
+            <!-- Explanation -->
             <div class="flex items-center justify-between mt-2">
               <label class="form__label flex items-center gap-2">
-                <input type="checkbox" v-model="question.hasExplanation" />
+                <input
+                  type="checkbox"
+                  v-model="question.hasExplanation"
+                  @change="autoSave(question)"
+                />
                 Add Explanation
               </label>
               <button
                 v-if="question.type === 'mcq'"
                 @click.prevent="addChoice(question.id)"
-                class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-primary-hover focus:outline-none cursor-pointer"
+                class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-primary-hover cursor-pointer"
               >
                 Add Choice
               </button>
@@ -261,6 +324,7 @@ onMounted(() => {
             <textarea
               v-if="question.hasExplanation"
               v-model="question.explanation"
+              @input="autoSave(question)"
               class="form__control mt-2"
               placeholder="Write explanation..."
             ></textarea>
@@ -268,91 +332,139 @@ onMounted(() => {
 
           <!-- Add Question / Submit -->
           <div class="flex items-center justify-between mt-4">
-            <div class="flex gap-2">
-              <button @click="addQuestion()" class="base__outline">Add Question</button>
-            </div>
-            <BaseButton @click="submitQuiz" :loading="quizStore.loading">Submit</BaseButton>
+            <button @click="addQuestion" class="base__outline">Add Question</button>
+            <BaseButton @click="submitQuiz" :loading="questionStore.loading">Submit</BaseButton>
           </div>
         </article>
       </div>
-
       <div class="flex-none w-72">
-        <div class="flex-none w-72">
-          <div class="card">
-            <div class="card__header">
-              <h3 class="card__title">Question Settings</h3>
-              <RouterLink :to="{ name: 'quiz.view', params: { code: quiz.code } }">
-                Public
-              </RouterLink>
-            </div>
-            <div class="card__body space-y-4">
-              <div class="form__group">
-                <label class="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    name="shuffle_questions"
-                    class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <span class="ml-3 text-gray-700"
-                    >Randomize the order of the questions during the test</span
-                  >
-                </label>
-                <label class="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    name="allow_blank"
-                    class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <span class="ml-3 text-gray-700"
-                    >Allow students to submit blank/empty answers</span
-                  >
-                </label>
-                <label class="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    name="negative_marking"
-                    class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <span class="ml-3 text-gray-700"
-                    >Penalize incorrect answers (negative marking)</span
-                  >
-                </label>
-              </div>
+        <div class="card bg-white rounded-xl border border-border">
+          <!-- Header -->
+          <div
+            class="card__header flex items-center justify-between px-4 py-3 border-b border-gray-100"
+          >
+            <h3 class="text-lg font-semibold text-gray-800">Quiz Settings</h3>
+            <RouterLink
+              v-if="quiz && quiz.code"
+              :to="{ name: 'quiz.view', params: { code: quiz.code } }"
+              class="text-sm text-primary hover:underline"
+            >
+              Public View
+            </RouterLink>
+          </div>
 
-              <!-- Notifications -->
+          <!-- Body -->
+          <div class="card__body p-4 space-y-5 text-sm text-gray-700">
+            <form @submit.prevent="quizUpdate">
               <div class="form__group">
-                <label class="form__label font-medium text-gray-700 mb-2 block"
-                  >Do you want to receive an email whenever someone finishes this test?</label
-                >
-                <div class="flex flex-col gap-2">
-                  <label class="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="pagination"
-                      value="all"
-                      class="form-radio h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <span class="ml-3 text-gray-700">Yes, and send them to:</span>
-                  </label>
-                  <label class="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="pagination"
-                      value="one"
-                      class="form-radio h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <span class="ml-3 text-gray-700">No</span>
-                  </label>
+                <label class="form__label">Title</label>
+                <input type="text" v-model="form.title" class="form__control" />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="form__group">
+                  <label class="form__label">Code</label>
+                  <input type="text" v-model="form.code" class="form__control" />
+                </div>
+                <div class="form__group">
+                  <label class="form__label">Total Marks</label>
+                  <input type="text" v-model="form.total_marks" class="form__control" />
+                </div>
+                <div class="form__group">
+                  <label class="form__label">Passing Marks</label>
+                  <input type="text" v-model="form.passing_marks" class="form__control" />
+                </div>
+                <div class="form__group">
+                  <label class="form__label">Time Limit</label>
+                  <input type="text" v-model="form.time_limit" class="form__control" />
                 </div>
               </div>
-            </div>
+              <div class="form__group">
+                <label class="form__label">Start Time</label>
+                <input type="datetime-local" v-model="form.start_time" class="form__control" />
+              </div>
+              <div class="form__group">
+                <label class="form__label">End Time</label>
+                <input type="datetime-local" v-model="form.end_time" class="form__control" />
+              </div>
+              <div class="form__group">
+                <label class="form__label">Published</label>
+                <select class="form__select w-full" v-model="form.is_active">
+                  <option :value="true">Yes</option>
+                  <option :value="false">No</option>
+                </select>
+              </div>
+
+              <div class="divide-y divide-border space-y-2">
+                <!-- Settings -->
+                <div class="py-4 space-y-3">
+                  <h4 class="text-sm font-semibold text-gray-800 mb-2">Options</h4>
+
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      v-model="form.shuffle"
+                      class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
+                    />
+                    Randomize the order of the questions during the test
+                  </label>
+
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      v-model="form.allow_blank"
+                      class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
+                    />
+                    Allow students to submit blank/empty answers
+                  </label>
+
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      v-model="form.negative_marking"
+                      class="form-checkbox h-4 w-4 text-blue-600 border-gray-300"
+                    />
+                    Penalize incorrect answers (negative marking)
+                  </label>
+                </div>
+
+                <!-- Notifications -->
+                <div class="py-4">
+                  <h4 class="text-sm font-semibold text-gray-800 mb-2">Notifications</h4>
+                  <p class="text-gray-600 text-sm mb-2">
+                    Do you want to receive an email whenever someone finishes this test?
+                  </p>
+                  <div class="flex flex-col gap-2">
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="email_notify"
+                        :value="true"
+                        v-model="form.email_notify"
+                        class="form-radio h-4 w-4 text-blue-600 border-gray-300"
+                      />
+                      <span class="ml-2 text-gray-700">Yes, send notification email</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="email_notify"
+                        :value="false"
+                        v-model="form.email_notify"
+                        class="form-radio h-4 w-4 text-blue-600 border-gray-300"
+                      />
+                      <span class="ml-2 text-gray-700">No, don’t send notifications</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="my-6">
+                <BaseButton :loading="quizStore.loading" class="w-full">Update</BaseButton>
+              </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
   </Default>
 </template>
-
-<style scoped>
-/* Optional: Add custom styling if needed */
-</style>

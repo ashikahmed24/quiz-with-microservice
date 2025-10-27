@@ -25,7 +25,7 @@ onMounted(() => {
         <h3 class="card__title">Quizzes</h3>
         <div class="flex items-center gap-2">
           <input type="text" placeholder="Search keywords..." class="form__control w-64" />
-          <button type="button" class="base__button">Add Quiz</button>
+          <RouterLink :to="{ name: 'quizzes.create' }" class="base__button">Add Quiz</RouterLink>
         </div>
       </div>
       <div class="card__body">
@@ -33,7 +33,7 @@ onMounted(() => {
           <div
             v-for="quiz in quizzes.data"
             :key="quiz.id"
-            class="border border-gray-200 rounded-2xl p-4 transition relative menu-wrapper"
+            class="border border-gray-200 rounded-lg p-4 transition relative"
           >
             <div class="flex items-center justify-between">
               <h3 class="font-medium text-gray-800 mb-2">

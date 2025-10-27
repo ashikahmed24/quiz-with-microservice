@@ -22,9 +22,28 @@ const router = createRouter({
     },
 
     {
+      path: '/categories',
+      name: 'categories',
+      component: () => import('@/views/categories/index.vue'),
+    },
+
+    // users
+    {
+      path: '/users',
+      name: 'users',
+      component: () => import('../views/users/index.vue'),
+    },
+
+    {
       path: '/quizzes',
       name: 'quizzes',
       component: () => import('../views/quizzes/index.vue'),
+    },
+
+    {
+      path: '/quizzes/create',
+      name: 'quizzes.create',
+      component: () => import('../views/quizzes/create.vue'),
     },
 
     {
@@ -46,15 +65,15 @@ const router = createRouter({
     },
 
     {
-      path: '/results',
-      name: 'results',
-      component: () => import('../views/results/index.vue'),
+      path: '/quiz/:id/results',
+      name: 'quiz.results',
+      component: () => import('../views/quizzes/results.vue'),
     },
 
     {
-      path: '/leaderboards',
-      name: 'leaderboards',
-      component: () => import('../views/leaderboards/index.vue'),
+      path: '/results',
+      name: 'results',
+      component: () => import('../views/results/index.vue'),
     },
   ],
 })

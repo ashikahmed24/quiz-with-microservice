@@ -1,5 +1,8 @@
 import apiClient from '@/utils/axios'
 import { defineStore } from 'pinia'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
 
 export const useQuizStore = defineStore('quiz', {
   state: () => ({
@@ -25,6 +28,22 @@ export const useQuizStore = defineStore('quiz', {
       }
     },
 
+    async store(form, { toast, router }) {
+      this.loading = true
+      try {
+        const response = await apiClient.post(`/api/quizzes`, form)
+        if (response.status === 201) {
+          toast.success(response.data.message)
+          router.push({ name: 'quizzes' })
+          return Promise.resolve(response)
+        }
+      } catch (error) {
+        return Promise.reject(error.response)
+      } finally {
+        this.loading = false
+      }
+    },
+
     async show(quizId) {
       try {
         const response = await apiClient.get(`/api/quizzes/${quizId}`)
@@ -36,7 +55,7 @@ export const useQuizStore = defineStore('quiz', {
       }
     },
 
-    async update(quiz, payload, toast) {
+    async update(quiz, payload) {
       this.loading = true
       try {
         const response = await apiClient.put(`/api/quizzes/${quiz}`, payload)
@@ -56,7 +75,20 @@ export const useQuizStore = defineStore('quiz', {
 
     async view(quiz) {
       try {
-        const response = await apiClient.get(`/api/public/quizzes/${quiz}`)
+        const response = await apiClient.get(`/api/quiz/${quiz}`)
+        if (response.status === 200) {
+          return Promise.resolve(response.data)
+        }
+      } catch (error) {
+        if (error.response) {
+          return Promise.reject(error.response)
+        }
+      }
+    },
+
+    async start(quiz) {
+      try {
+        const response = await apiClient.get(`/api/quizzes/${quiz}/start`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
@@ -80,6 +112,45 @@ export const useQuizStore = defineStore('quiz', {
         }
       } finally {
         this.loading = false
+      }
+    },
+
+    async results(quiz) {
+      try {
+        const response = await apiClient.get(`/api/quizzes/${quiz}/results`)
+        if (response.status === 200) {
+          return Promise.resolve(response)
+        }
+      } catch (error) {
+        if (error.response) {
+          return Promise.reject(error.response)
+        }
+      }
+    },
+
+    async leaderboards(quiz) {
+      try {
+        const response = await apiClient.get(`/api/quizzes/${quiz}/leaderboards`)
+        if (response.status === 200) {
+          return Promise.resolve(response)
+        }
+      } catch (error) {
+        if (error.response) {
+          return Promise.reject(error.response)
+        }
+      }
+    },
+
+    async participants(quiz) {
+      try {
+        const response = await apiClient.get(`/api/quizzes/${quiz}/participants`)
+        if (response.status === 200) {
+          return Promise.resolve(response)
+        }
+      } catch (error) {
+        if (error.response) {
+          return Promise.reject(error.response)
+        }
       }
     },
   },

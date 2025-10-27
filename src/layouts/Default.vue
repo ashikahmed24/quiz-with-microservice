@@ -5,9 +5,27 @@ import { storeToRefs } from 'pinia'
 import IconHome from '@/components/icons/IconHome.vue'
 import IconPower from '@/components/icons/IconPower.vue'
 import IconQuestion from '@/components/icons/IconQuestion.vue'
+import IconResult from '@/components/icons/IconResult.vue'
+import IconList from '@/components/icons/IconList.vue'
+import IconUsers from '@/components/icons/IconUsers.vue'
+import IconRocket from '@/components/icons/IconRocket.vue'
+import { useSettingStore } from '@/stores/setting'
 
 const authStore = useAuthStore()
+const settingStore = useSettingStore()
 const { user } = storeToRefs(authStore)
+
+const logout = async () => {
+  if (confirm('Do you really want to logout?')) {
+    await authStore.logout()
+  }
+}
+
+const Reboot = async () => {
+  if (confirm('Are you sure you want to clear the cache?')) {
+    await settingStore.reboot()
+  }
+}
 
 const loading = ref(true)
 
@@ -32,26 +50,31 @@ onMounted(() => {
           <span class="ml-3">Dashboard</span>
         </RouterLink>
 
+        <RouterLink :to="{ name: 'categories' }" active-class="active" class="nav__item">
+          <IconList class="size-5" />
+          <span class="ml-2">Categories</span>
+        </RouterLink>
+
         <RouterLink :to="{ name: 'quizzes' }" active-class="active" class="nav__item">
           <IconQuestion class="size-5" />
           <span class="ml-2">Quizzes</span>
         </RouterLink>
 
         <RouterLink :to="{ name: 'results' }" active-class="active" class="nav__item">
-          <IconHome class="size-5" />
+          <IconResult class="size-5" />
           <span class="ml-2">Results</span>
         </RouterLink>
 
-        <RouterLink :to="{ name: 'leaderboards' }" active-class="active" class="nav__item">
-          <IconHome class="size-5" />
-          <span class="ml-2">Leaderboards</span>
+        <RouterLink :to="{ name: 'users' }" active-class="active" class="nav__item">
+          <IconUsers class="size-5" />
+          <span class="ml-2">Users</span>
         </RouterLink>
 
-        <button type="button" @click="cacheClear()" active-class="active" class="nav__item w-full">
-          <IconHome class="size-5" />
+        <button type="button" @click="Reboot()" active-class="active" class="nav__item w-full">
+          <IconRocket class="size-5" />
           <span class="ml-2">Cache Clear</span>
         </button>
-        <button type="button" @click="logout" class="nav__item w-full">
+        <button type="submit" @click="logout" class="nav__item w-full cursor-pointer">
           <IconPower class="size-5" />
           <span class="ml-2">Logout</span>
         </button>
