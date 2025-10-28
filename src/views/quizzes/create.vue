@@ -20,7 +20,7 @@ const form = reactive({
   description: '',
   total_marks: '',
   passing_marks: '',
-  time_limit: '',
+  duration: '',
   category_id: '',
   shuffle: false,
   allow_blank: false,
@@ -76,7 +76,7 @@ onMounted(() => {
               </div>
               <div class="form__group">
                 <label class="form__label">Duration (min)</label>
-                <input type="number" v-model.number="form.time_limit" class="form__control" />
+                <input type="number" v-model.number="form.duration" class="form__control" />
               </div>
             </div>
 

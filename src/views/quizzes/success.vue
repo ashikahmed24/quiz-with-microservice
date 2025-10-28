@@ -9,23 +9,12 @@ const toast = useToast()
 // Get quiz result from query params
 const score = route.query.score || '0'
 const time = route.query.time || '00:00:00'
-const quizCode = route.query.code || ''
+const status = route.query.status || 'fail'
+const quizCode = route.params.code || ''
 
 // Optional toast message
 if (route.query.message) {
   toast.success(route.query.message)
-}
-
-const goToDashboard = () => {
-  router.push('/dashboard')
-}
-
-const retryQuiz = () => {
-  if (quizCode) {
-    router.push(`/quiz/${quizCode}`)
-  } else {
-    toast.error('Quiz code missing, cannot retry.')
-  }
 }
 </script>
 
@@ -59,6 +48,11 @@ const retryQuiz = () => {
 
       <!-- Quiz Result Summary -->
       <div class="bg-indigo-50 rounded-xl p-4 mb-6 space-y-2">
+        <div class="flex justify-between text-gray-700 text-lg font-medium">
+          <span>Status:</span>
+          <span v-if="status === 'fail'" class="font-bold text-red-600">Failed</span>
+          <span v-else class="font-bold text-green-600">Passed</span>
+        </div>
         <div class="flex justify-between text-gray-700 text-lg font-medium">
           <span>Score:</span>
           <span class="font-bold text-indigo-600">{{ score }}</span>

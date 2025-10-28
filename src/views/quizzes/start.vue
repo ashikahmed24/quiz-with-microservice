@@ -49,7 +49,7 @@ const loadQuiz = async () => {
   }))
 
   // Set timer
-  timeLeft.value = quiz.value.time_limit * 60
+  timeLeft.value = quiz.value.duration * 60
   startTimer()
 }
 
@@ -137,6 +137,7 @@ const submit = async () => {
       query: {
         score: response.data.score,
         time: response.data.duration_formatted,
+        status: response.status,
       },
     })
   }

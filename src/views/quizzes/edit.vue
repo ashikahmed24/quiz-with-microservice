@@ -19,7 +19,7 @@ const form = reactive({
   description: '',
   total_marks: 0,
   passing_marks: 0,
-  time_limit: 0,
+  duration: 0,
   start_time: '',
   end_time: '',
   published: false,
@@ -47,7 +47,7 @@ const loadQuiz = async () => {
     description: response.data.description,
     total_marks: response.data.total_marks,
     passing_marks: response.data.passing_marks,
-    time_limit: response.data.time_limit,
+    duration: response.data.duration,
     start_time: response.data.start_time,
     end_time: response.data.end_time,
     published: !!response.data.published,
@@ -377,8 +377,8 @@ onMounted(() => {
                   <input type="text" v-model="form.passing_marks" class="form__control" />
                 </div>
                 <div class="form__group">
-                  <label class="form__label">Time Limit</label>
-                  <input type="text" v-model="form.time_limit" class="form__control" />
+                  <label class="form__label">Duration (min)</label>
+                  <input type="text" v-model="form.duration" class="form__control" />
                 </div>
               </div>
               <div class="form__group">

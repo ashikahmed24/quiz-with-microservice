@@ -27,8 +27,7 @@ const startQuiz = async () => {
     return
   }
 
-  const { data } = await quizStore.start(route.params.code)
-  router.push({ name: 'quiz.start', params: { code: data.code } })
+  router.push({ name: 'quiz.start', params: { code: route.params.code } })
 }
 
 onMounted(() => {
@@ -69,7 +68,7 @@ watch(
         <div class="text-sm text-gray-600 mb-6">
           <p><strong>Total Marks:</strong> {{ quiz.total_marks }}</p>
           <p><strong>Passing Marks:</strong> {{ quiz.passing_marks }}</p>
-          <p><strong>Time Limit:</strong> {{ quiz.time_limit }} mins</p>
+          <p><strong>Time Limit:</strong> {{ quiz.duration }} mins</p>
         </div>
 
         <button @click="startQuiz" :disabled="quizStore.loading" class="base__button">
