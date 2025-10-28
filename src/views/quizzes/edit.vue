@@ -8,7 +8,6 @@ import { useRoute } from 'vue-router'
 import IconX from '@/components/icons/IconX.vue'
 import { debounce } from 'lodash'
 import IconLoading from '@/components/icons/IconLoading.vue'
-import MathJax from '@/components/MathJax.vue'
 
 const quizStore = useQuizStore()
 const questionStore = useQuestionStore()
@@ -23,7 +22,7 @@ const form = reactive({
   time_limit: 0,
   start_time: '',
   end_time: '',
-  is_active: false,
+  published: false,
   shuffle: false,
   allow_blank: false,
   negative_marking: false,
@@ -51,7 +50,7 @@ const loadQuiz = async () => {
     time_limit: response.data.time_limit,
     start_time: response.data.start_time,
     end_time: response.data.end_time,
-    is_active: !!response.data.is_active,
+    published: !!response.data.published,
     shuffle: !!response.data.shuffle,
     allow_blank: !!response.data.allow_blank,
     negative_marking: !!response.data.negative_marking,
