@@ -15,7 +15,7 @@ export const useSettingStore = defineStore('setting', {
   actions: {
     async reboot() {
       try {
-        const response = await apiClient.get('/api/settings/reboot')
+        const response = await apiClient.get('/api/v1/settings/reboot')
         if (response.status === 200) {
           toast.success(response.data.message)
           return Promise.resolve(response.data)

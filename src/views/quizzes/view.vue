@@ -4,7 +4,7 @@ import { useQuizStore } from '@/stores/quiz'
 import { useRoute, useRouter } from 'vue-router'
 import AuthOverlay from '@/components/AuthOverlay.vue'
 import { useAuthStore } from '@/stores/auth'
-
+import MathJax from '@/components/MathJax.vue'
 const authStore = useAuthStore()
 const quizStore = useQuizStore()
 const route = useRoute()
@@ -47,7 +47,20 @@ watch(
 
 <template>
   <div class="min-h-screen bg-[url(/bg-quiz.jpg)] bg-cover flex items-center justify-center p-4">
-    <template v-if="authStore.loading">Loading...</template>
+    <template v-if="quizStore.loading">
+      <div class="w-full max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 animate-pulse">
+        <div class="flex flex-col items-center space-y-4">
+          <div
+            class="h-12 w-12 rounded-full border-4 border-gray-300 border-t-primary animate-spin"
+          ></div>
+
+          <div class="h-4 w-3/4 bg-gray-200 rounded"></div>
+          <div class="h-4 w-1/2 bg-gray-200 rounded"></div>
+          <p class="text-gray-500 mt-4">Please wait...</p>
+        </div>
+      </div>
+    </template>
+
     <template v-else-if="quiz">
       <div class="w-full bg-gray-100 max-w-3xl text-center p-6 rounded-xl">
         <h3 class="text-2xl font-bold text-gray-800 mb-2">{{ quiz.title }}</h3>

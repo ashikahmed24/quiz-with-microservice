@@ -12,22 +12,12 @@ export const useResultStore = defineStore('result', {
   actions: {
     async all() {
       try {
-        const response = await apiClient.get(`/api/quizzes/results`)
+        const response = await apiClient.get(`/api/v1/quizzes/results`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
-        return Promise.reject(error.response)
-      }
-    },
-
-    async result(quiz) {
-      try {
-        const response = await apiClient.get(`/api/quizzes/${quiz}/results`)
-        if (response.status === 200) {
-          return Promise.resolve(response.data)
-        }
-      } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },

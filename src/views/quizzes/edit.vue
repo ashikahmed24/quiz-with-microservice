@@ -8,6 +8,7 @@ import { useRoute } from 'vue-router'
 import IconX from '@/components/icons/IconX.vue'
 import { debounce } from 'lodash'
 import IconLoading from '@/components/icons/IconLoading.vue'
+import MathJax from '@/components/MathJax.vue'
 
 const quizStore = useQuizStore()
 const questionStore = useQuestionStore()
@@ -229,7 +230,9 @@ onMounted(() => {
             <div class="flex items-end justify-between gap-4 mb-4">
               <div class="grow">
                 <div class="form__group">
-                  <label class="form__label"> {{ index + 1 }}. Question: </label>
+                  <label class="form__label">
+                    {{ index + 1 }}. Question: {{ question.content }}</label
+                  >
                   <input
                     type="text"
                     v-model="question.content"

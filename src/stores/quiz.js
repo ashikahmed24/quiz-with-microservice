@@ -15,7 +15,7 @@ export const useQuizStore = defineStore('quiz', {
   actions: {
     async all(page) {
       try {
-        const response = await apiClient.get(`/api/quizzes`, {
+        const response = await apiClient.get(`/api/v1/quizzes`, {
           params: {
             page: page,
           },
@@ -24,6 +24,7 @@ export const useQuizStore = defineStore('quiz', {
           return Promise.resolve(response)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },
@@ -31,34 +32,36 @@ export const useQuizStore = defineStore('quiz', {
     async store(form, { toast, router }) {
       this.loading = true
       try {
-        const response = await apiClient.post(`/api/quizzes`, form)
+        const response = await apiClient.post(`/api/v1/quizzes`, form)
         if (response.status === 201) {
           toast.success(response.data.message)
           router.push({ name: 'quizzes' })
           return Promise.resolve(response)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       } finally {
         this.loading = false
       }
     },
 
-    async show(quizId) {
+    async show(quiz) {
       try {
-        const response = await apiClient.get(`/api/quizzes/${quizId}`)
+        const response = await apiClient.get(`/api/v1/quizzes/${quiz}`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
-        throw error.response || error
+        toast.error(error.response.data.message)
+        return Promise.reject(error.response)
       }
     },
 
     async update(quiz, payload) {
       this.loading = true
       try {
-        const response = await apiClient.put(`/api/quizzes/${quiz}`, payload)
+        const response = await apiClient.put(`/api/v1/quizzes/${quiz}`, payload)
 
         if (response.status === 200) {
           toast.success(response.data.message)
@@ -66,6 +69,7 @@ export const useQuizStore = defineStore('quiz', {
         return Promise.resolve(response.data)
       } catch (error) {
         if (error.response) {
+          toast.error(error.response.data.message)
           return Promise.reject(error.response)
         }
       } finally {
@@ -74,15 +78,19 @@ export const useQuizStore = defineStore('quiz', {
     },
 
     async view(quiz) {
+      this.loading = true
       try {
-        const response = await apiClient.get(`/api/quiz/${quiz}`)
+        const response = await apiClient.get(`/api/quizzes/${quiz}`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
         if (error.response) {
+          toast.error(error.response.data.message)
           return Promise.reject(error.response)
         }
+      } finally {
+        this.loading = false
       }
     },
 
@@ -95,6 +103,7 @@ export const useQuizStore = defineStore('quiz', {
         }
       } catch (error) {
         if (error.response) {
+          toast.error(error.response.data.message)
           return Promise.reject(error.response)
         }
       } finally {
@@ -111,6 +120,7 @@ export const useQuizStore = defineStore('quiz', {
         }
       } catch (error) {
         if (error.response) {
+          toast.error(error.response.data.message)
           return Promise.reject(error.response)
         }
       } finally {
@@ -120,12 +130,13 @@ export const useQuizStore = defineStore('quiz', {
 
     async results(quiz) {
       try {
-        const response = await apiClient.get(`/api/quizzes/${quiz}/results`)
+        const response = await apiClient.get(`/api/v1/quizzes/${quiz}/results`)
         if (response.status === 200) {
           return Promise.resolve(response)
         }
       } catch (error) {
         if (error.response) {
+          toast.error(error.response.data.message)
           return Promise.reject(error.response)
         }
       }
@@ -133,12 +144,13 @@ export const useQuizStore = defineStore('quiz', {
 
     async leaderboards(quiz) {
       try {
-        const response = await apiClient.get(`/api/quizzes/${quiz}/leaderboards`)
+        const response = await apiClient.get(`/api/v1/quizzes/${quiz}/leaderboards`)
         if (response.status === 200) {
           return Promise.resolve(response)
         }
       } catch (error) {
         if (error.response) {
+          toast.error(error.response.data.message)
           return Promise.reject(error.response)
         }
       }
@@ -146,12 +158,13 @@ export const useQuizStore = defineStore('quiz', {
 
     async participants(quiz) {
       try {
-        const response = await apiClient.get(`/api/quizzes/${quiz}/participants`)
+        const response = await apiClient.get(`/api/v1/quizzes/${quiz}/participants`)
         if (response.status === 200) {
           return Promise.resolve(response)
         }
       } catch (error) {
         if (error.response) {
+          toast.error(error.response.data.message)
           return Promise.reject(error.response)
         }
       }

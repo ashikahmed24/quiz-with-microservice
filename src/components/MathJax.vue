@@ -1,67 +1,46 @@
 <script setup>
-import { onMounted, computed, watch } from "vue";
+import { ref, watch, onMounted, nextTick } from 'vue'
 
+// Props
 const props = defineProps({
-    type: {
-        type: String,
-        default: "tex",
-    },
-    content: {
-        type: String,
-        required: true,
-    },
-});
+  content: {
+    type: String,
+    required: true,
+  },
+})
 
-const formattedAsciiMath = computed(() => {
-    return `<p>\`${props.content}\`</p>`;
-});
+const container = ref(null)
 
-const formattedTex = computed(() => {
-    return `<p>$$${props.content}$$</p>`;
-});
-
-const scriptUrls = {
-    asciimath: "https://cdn.jsdelivr.net/npm/mathjax@4/startup.js",
-    mathml: "https://cdn.jsdelivr.net/npm/mathjax@4/mml-chtml.js",
-    tex: "https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js",
-};
-
-const loadMathJax = () => {
-    const old = document.querySelector("script[data-mathjax]");
-    if (old) old.remove();
-
-    window.MathJax = {};
-
-    if (props.type === "asciimath") {
-        window.MathJax = {
-            loader: { load: ["input/asciimath", "output/chtml", "ui/menu"] },
-            output: { font: "mathjax-newcm" },
-        };
-    }
-
-    const script = document.createElement("script");
-    script.defer = true;
-    script.dataset.mathjax = "true";
-    script.src = scriptUrls[props.type] || scriptUrls.tex;
-    document.head.appendChild(script);
-};
+// Render MathJax
+const renderMath = async () => {
+  if (!window.MathJax) return
+  await nextTick() // ensure DOM is updated
+  MathJax.typesetPromise([container.value])
+}
 
 onMounted(() => {
-    loadMathJax();
-});
+  if (!window.MathJax) {
+    // Load MathJax v4 for TeX only
+    const script = document.createElement('script')
+    script.defer = true
+    script.id = 'MathJax-script'
+    script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js'
+    script.onload = renderMath
+    document.head.appendChild(script)
+  } else {
+    renderMath()
+  }
+})
 
-watch(() => props.type, loadMathJax);
+// Watch for content updates
+watch(
+  () => props.content,
+  () => {
+    renderMath()
+  },
+)
 </script>
 
 <template>
-    <div class="p-6">
-        <div v-if="type === 'asciimath'" v-html="formattedAsciiMath"></div>
-
-        <div v-else-if="type === 'mathml'" v-html="content"></div>
-
-        <div v-else v-html="formattedTex"></div>
-    </div>
+  <div ref="container" v-html="content"></div>
 </template>
-
-
-<style scoped></style>

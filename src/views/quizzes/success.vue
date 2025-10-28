@@ -34,7 +34,7 @@ const retryQuiz = () => {
     class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4 relative"
   >
     <div
-      class="bg-white rounded-xl p-8 max-w-md w-full text-center border border-indigo-100 shadow-lg relative overflow-hidden"
+      class="bg-white rounded-xl p-8 max-w-md w-full text-center border border-indigo-100 relative overflow-hidden"
     >
       <!-- Animated Checkmark -->
       <div class="flex justify-center mb-6">

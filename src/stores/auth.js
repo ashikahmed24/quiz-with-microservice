@@ -61,13 +61,11 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.loading = true
       try {
-        const response = await axiosInstance.post('/api/auth/logout')
+        const response = await apiClient.post('/api/auth/logout')
         if (response.status === 200) {
           toast.success(response.data.message)
           this.$reset()
-          return new Promise((resolve) => {
-            resolve(response)
-          })
+          return Promise.resolve(response.data)
         }
       } catch (error) {
         if (error.response) {

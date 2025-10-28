@@ -6,6 +6,11 @@ const router = createRouter({
   linkExactActiveClass: '',
   routes: [
     {
+      path: '/',
+      name: 'home',
+      component: () => import('../views/home.vue'),
+    },
+    {
       path: '/auth/login',
       name: 'login',
       component: () => import('../views/auth/login.vue'),
@@ -16,8 +21,8 @@ const router = createRouter({
       component: () => import('../views/auth/forgot.vue'),
     },
     {
-      path: '/',
-      name: 'home',
+      path: '/dashboard',
+      name: 'dashboard',
       component: () => import('../views/index.vue'),
     },
 

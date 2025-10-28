@@ -1,5 +1,8 @@
 import apiClient from '@/utils/axios'
 import { defineStore } from 'pinia'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
 
 export const useQuestionStore = defineStore('question', {
   state: () => ({
@@ -12,22 +15,24 @@ export const useQuestionStore = defineStore('question', {
   actions: {
     async all(quiz) {
       try {
-        const response = await apiClient.get(`/api/quizzes/${quiz}/questions`)
+        const response = await apiClient.get(`/api/v1/quizzes/${quiz}/questions`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },
 
     async store(quiz, question) {
       try {
-        const response = await apiClient.post(`/api/quizzes/${quiz}/questions`, question)
+        const response = await apiClient.post(`/api/v1/quizzes/${quiz}/questions`, question)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },
@@ -36,13 +41,14 @@ export const useQuestionStore = defineStore('question', {
       this.loading = true
       try {
         const response = await apiClient.put(
-          `/api/quizzes/${quiz}/questions/${question.id}`,
+          `/api/v1/quizzes/${quiz}/questions/${question.id}`,
           question,
         )
         if (response.status === 200) {
           return Promise.resolve(response)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       } finally {
         this.loading = false
@@ -51,22 +57,24 @@ export const useQuestionStore = defineStore('question', {
 
     async delete(quiz, question) {
       try {
-        const response = await apiClient.delete(`quizzes/${quiz}/questions/${question}`)
+        const response = await apiClient.delete(`/api/v1/quizzes/${quiz}/questions/${question}`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },
 
     async dragged(quiz) {
       try {
-        const response = await apiClient.post(`quizzes/${quiz}/questions/dragged`)
+        const response = await apiClient.post(`/api/v1/quizzes/${quiz}/questions/dragged`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },

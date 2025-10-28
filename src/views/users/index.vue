@@ -40,28 +40,36 @@ onMounted(() => {
               <tr v-for="user in users">
                 <td>
                   <a href="#" class="flex max-lg:justify-end items-center gap-3">
-                    <img
-                      src="https://ui-avatars.com/api/?name=Benjamin Goveya"
-                      class="rounded-full h-10 w-10"
-                      :alt="user.name"
-                    />
+                    <img :src="user.avatar_url" class="rounded-full h-10 w-10" :alt="user.name" />
                     <div>
                       <h4 class="font-medium">
                         {{ user.name }}
                       </h4>
-                      <span class="text-xs">@benjamin-goveya</span>
+                      <span class="text-xs">@{{ user.name }}</span>
                     </div>
                   </a>
                 </td>
                 <td>{{ user.phone ?? 'N/A' }}</td>
                 <td>{{ user.email ?? 'N/A' }}</td>
-                <td>{{ DateFormat(user.created_at) }}</td>
+                <td>{{ user.created_at.human }}</td>
                 <td>
                   <button type="button" class="badge badge__primary">View</button>
                 </td>
               </tr>
             </tbody>
           </table>
+
+          <!-- Pagination -->
+          <div class="mt-8">
+            <Pagination
+              :total-items="users?.meta?.total ?? 0"
+              :current-page="users?.meta?.current_page ?? 1"
+              :items-per-page="users?.meta?.per_page ?? 10"
+              :pages-to-show="1"
+              @page-change="loadUsers"
+              visible-always
+            />
+          </div>
         </div>
       </div>
     </div>

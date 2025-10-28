@@ -1,5 +1,8 @@
 import apiClient from '@/utils/axios'
 import { defineStore } from 'pinia'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
 
 export const useCategoryStore = defineStore('category', {
   state: () => ({
@@ -12,7 +15,7 @@ export const useCategoryStore = defineStore('category', {
   actions: {
     async all(page) {
       try {
-        const response = await apiClient.get(`/api/categories`, {
+        const response = await apiClient.get(`/api/v1/categories`, {
           params: {
             page: page,
           },
@@ -21,6 +24,7 @@ export const useCategoryStore = defineStore('category', {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },
@@ -28,13 +32,14 @@ export const useCategoryStore = defineStore('category', {
     async store(from, { router, toast }) {
       this.loading = true
       try {
-        const response = await apiClient.post(`/api/categories`, from)
+        const response = await apiClient.post(`/api/v1/categories`, from)
         if (response.status === 201) {
           toast.success(response.data.message)
           router.push({ name: 'categories' })
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       } finally {
         this.loading = false
@@ -44,11 +49,12 @@ export const useCategoryStore = defineStore('category', {
     async update(category, form) {
       this.loading = true
       try {
-        const response = await apiClient.put(`/api/categories/${category}`, form)
+        const response = await apiClient.put(`/api/v1/categories/${category}`, form)
         if (response.status === 200) {
           return Promise.resolve(response)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       } finally {
         this.loading = false
@@ -57,7 +63,7 @@ export const useCategoryStore = defineStore('category', {
 
     async search(query) {
       try {
-        const response = await apiClient.get(`api/categories/search`, {
+        const response = await apiClient.get(`api/v1/categories/search`, {
           params: {
             query: query,
           },
@@ -66,6 +72,7 @@ export const useCategoryStore = defineStore('category', {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },

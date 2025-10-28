@@ -12,7 +12,7 @@ export const useUserStore = defineStore('user', {
   actions: {
     async all(page) {
       try {
-        const response = await apiClient.get(`/api/users`, {
+        const response = await apiClient.get(`/api/v1/users`, {
           params: {
             page: page,
           },
@@ -21,6 +21,7 @@ export const useUserStore = defineStore('user', {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },
@@ -28,13 +29,14 @@ export const useUserStore = defineStore('user', {
     async store(from, { router, toast }) {
       this.loading = true
       try {
-        const response = await apiClient.post(`/api/users`, from)
+        const response = await apiClient.post(`/api/v1/users`, from)
         if (response.status === 201) {
           toast.success(response.data.message)
           router.push({ name: 'categories' })
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       } finally {
         this.loading = false
@@ -44,11 +46,12 @@ export const useUserStore = defineStore('user', {
     async update(user, form) {
       this.loading = true
       try {
-        const response = await apiClient.put(`/api/users/${user}`, form)
+        const response = await apiClient.put(`/api/v1/users/${user}`, form)
         if (response.status === 200) {
           return Promise.resolve(response)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       } finally {
         this.loading = false
@@ -57,11 +60,12 @@ export const useUserStore = defineStore('user', {
 
     async delete(user) {
       try {
-        const response = await apiClient.delete(`api/users/${user}`)
+        const response = await apiClient.delete(`api/v1/users/${user}`)
         if (response.status === 200) {
           return Promise.resolve(response.data)
         }
       } catch (error) {
+        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },

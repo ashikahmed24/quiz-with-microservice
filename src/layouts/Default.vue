@@ -17,7 +17,7 @@ const { user } = storeToRefs(authStore)
 
 const logout = async () => {
   if (confirm('Do you really want to logout?')) {
-    await authStore.logout()
+    authStore.logout()
   }
 }
 
@@ -45,7 +45,7 @@ onMounted(() => {
       </div>
 
       <nav class="bg-white flex-1 overflow-y-auto scrollbar px-2 py-4 space-y-2">
-        <RouterLink :to="{ name: 'home' }" active-class="active" class="nav__item">
+        <RouterLink :to="{ name: 'dashboard' }" active-class="active" class="nav__item">
           <IconHome class="size-5" />
           <span class="ml-3">Dashboard</span>
         </RouterLink>
