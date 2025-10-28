@@ -392,7 +392,7 @@ onMounted(() => {
               </div>
               <div class="form__group">
                 <label class="form__label">Published</label>
-                <select class="form__select w-full" v-model="form.is_active">
+                <select class="form__select w-full" v-model="form.published">
                   <option :value="true">Yes</option>
                   <option :value="false">No</option>
                 </select>
