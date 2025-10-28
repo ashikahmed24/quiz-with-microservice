@@ -1,5 +1,5 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
 const router = useRouter()
@@ -71,7 +71,7 @@ const retryQuiz = () => {
 
       <!-- Actions -->
       <div class="w-full text-center space-x-4">
-        <button class="base__button">Go to Dashboard</button>
+        <RouterLink :to="{ name: 'home' }" class="base__button">Go to Home</RouterLink>
         <button class="base__outline">Retry Quiz</button>
       </div>
     </div>

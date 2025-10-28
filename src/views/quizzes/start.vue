@@ -4,6 +4,7 @@ import { useQuizStore } from '@/stores/quiz'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import BaseButton from '@/components/BaseButton.vue'
+import MathJax from '@/components/MathJax.vue'
 
 const quizStore = useQuizStore()
 const route = useRoute()
@@ -113,7 +114,7 @@ const submit = async () => {
 
   const payload = {
     started_at: new Date()
-      .toLocaleString('sv-SE', {
+      .toLocaleString('bn-BD', {
         timeZone: 'Asia/Dhaka',
         hour12: false,
       })
@@ -158,18 +159,18 @@ onMounted(() => loadQuiz())
   <div class="min-h-screen bg-[url(/bg-quiz.jpg)] bg-cover flex items-center justify-center p-4">
     <div class="w-full bg-gray-100 max-w-3xl p-6 rounded-xl">
       <!-- Header -->
-      <header class="flex items-center justify-between mb-6">
+      <header class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-indigo-600">{{ quiz.title }}</h1>
+          <h1 class="text-2xl font-bold text-primary">{{ quiz.title }}</h1>
           <p class="text-sm text-gray-500">{{ quiz.description }}</p>
         </div>
-        <div class="text-right">
+        <div class="flex md:flex-col items-center gap-4 text-right">
           <div class="text-sm text-gray-600">
             সময় বাকি: <span class="font-semibold text-red-600">{{ formattedTime }}</span>
           </div>
           <div class="text-xs text-gray-500 mt-1">
             প্রশ্ন {{ currentIndex + 1 }} / {{ questions.length }} | স্কোর:
-            <span class="font-semibold text-indigo-600">{{ score }}</span>
+            <span class="font-semibold text-primary">{{ score }}</span>
           </div>
         </div>
       </header>
@@ -186,11 +187,19 @@ onMounted(() => loadQuiz())
       <div v-if="currentQuestion && questions.length">
         <main class="bg-white rounded-2xl p-6 border border-gray-100">
           <!-- Question -->
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="font-bold">প্রশ্ন {{ currentQuestion.id }}: {{ currentQuestion.text }}</h3>
-            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-              {{ currentQuestion.mark }} পয়েন্ট
-            </span>
+          <div class="w-full mb-4">
+            <div class="flex flex-wrap items-start justify-between">
+              <div class="flex flex-wrap gap-2">
+                <h3 class="font-normal">প্রশ্নঃ</h3>
+                <MathJax :content="currentQuestion.text" />
+              </div>
+
+              <span class="px-4 py-1 bg-indigo-100 text-primary rounded-full text-sm font-medium">
+                {{ currentQuestion.mark }} পয়েন্ট
+              </span>
+            </div>
+
+            <!-- <h3 class="font-bold">প্রশ্ন {{ currentQuestion }}: {{ currentQuestion.text }}</h3> -->
           </div>
 
           <!-- Options -->
@@ -204,16 +213,19 @@ onMounted(() => loadQuiz())
               >
                 <div class="flex items-center gap-2 truncate">
                   <span class="font-semibold">{{ choice.label }}.</span>
-                  <span>{{ choice.content }}</span>
+                  <MathJax :content="choice.content" />
                 </div>
-                <span v-if="answered && choice.is_correct" class="text-green-600 font-bold"
-                  >✔</span
-                >
-                <span
-                  v-if="answered && selectedIndex === index && !choice.is_correct"
-                  class="text-red-600 font-bold"
-                  >✘</span
-                >
+
+                <div v-if="quiz.shuffle">
+                  <span v-if="answered && choice.is_correct" class="text-green-600 font-bold"
+                    >✔</span
+                  >
+                  <span
+                    v-if="answered && selectedIndex === index && !choice.is_correct"
+                    class="text-red-600 font-bold"
+                    >✘</span
+                  >
+                </div>
               </button>
             </li>
           </ul>
@@ -232,7 +244,9 @@ onMounted(() => loadQuiz())
                 Next
               </button>
 
-              <BaseButton v-else @click="submit" :loading="quizStore.loading">Submit</BaseButton>
+              <BaseButton v-else @click="submit" :loading="quizStore.loading" :disabled="!answered">
+                Submit
+              </BaseButton>
             </div>
           </div>
         </main>
