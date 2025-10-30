@@ -114,7 +114,7 @@ onMounted(() => {
               Leaderboards
             </h3>
 
-            <div v-if="leaderboards" class="space-y-3">
+            <div v-if="leaderboards" class="space-y-3 h-40 overflow-y-auto scrollbar">
               <div
                 v-for="player in leaderboards?.leaderboards"
                 :key="player.user.id"
@@ -128,9 +128,9 @@ onMounted(() => {
                       player.rank === 1
                         ? 'bg-yellow-400 text-white'
                         : player.rank === 2
-                          ? 'bg-gray-300 text-gray-800'
+                          ? 'bg-amber-600 text-white'
                           : player.rank === 3
-                            ? 'bg-amber-600 text-white'
+                            ? 'bg-gray-300 text-gray-800'
                             : 'bg-indigo-100 text-indigo-700',
                     ]"
                   >
@@ -140,7 +140,6 @@ onMounted(() => {
                   <!-- User Info -->
                   <div>
                     <div class="font-medium text-gray-900">{{ player.user.name }}</div>
-                    <div class="text-sm text-gray-500">{{ player.user.email }}</div>
                   </div>
                 </div>
 
