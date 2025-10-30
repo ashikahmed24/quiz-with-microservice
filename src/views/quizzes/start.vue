@@ -23,7 +23,10 @@ const timer = ref(null)
 
 // --- Computed ---
 const currentQuestion = computed(() => questions.value[currentIndex.value] || {})
+
+// answered: এখন শুধু বোঝাবে user কি answer দিয়েছে কিনা
 const answered = computed(() => results.value[currentIndex.value] !== undefined)
+
 const formattedTime = computed(() => {
   const m = Math.floor(timeLeft.value / 60)
   const s = timeLeft.value % 60
@@ -48,7 +51,6 @@ const loadQuiz = async () => {
     answer: q.options.findIndex((o) => o.is_correct),
   }))
 
-  // Set timer
   timeLeft.value = quiz.value.duration * 60
   startTimer()
 }
@@ -60,18 +62,16 @@ const startTimer = () => {
     if (timeLeft.value > 0) timeLeft.value--
     else {
       clearInterval(timer.value)
-      submit(true) // auto-submit when time ends
+      submit(true)
     }
   }, 1000)
 }
 
 // --- Selection Handler ---
 const select = (index) => {
-  if (answered.value) return // disable after first click
-
   selectedIndex.value = index
 
-  // Save answer
+  // Save/Update answer
   results.value[currentIndex.value] = {
     question_id: currentQuestion.value.id,
     option_id: currentQuestion.value.options[index].id,
@@ -80,8 +80,8 @@ const select = (index) => {
   // Update live score
   score.value = results.value.reduce((total, r, i) => {
     const q = questions.value[i]
-    const selectedOption = q.options.find((o) => o.id === r.option_id)
-    return total + (selectedOption?.is_correct ? q.mark : 0)
+    const opt = q.options.find((o) => o.id === r.option_id)
+    return total + (opt?.is_correct ? q.mark : 0)
   }, 0)
 }
 
@@ -105,7 +105,6 @@ const updateSelectedIndex = () => {
 const submit = async () => {
   clearInterval(timer.value)
 
-  // final score calculation
   score.value = results.value.reduce((total, r, i) => {
     const q = questions.value[i]
     const selectedOption = q.options.find((o) => o.id === r.option_id)
@@ -113,31 +112,25 @@ const submit = async () => {
   }, 0)
 
   const payload = {
-    started_at: new Date()
-      .toLocaleString('bn-BD', {
-        timeZone: 'Asia/Dhaka',
-        hour12: false,
-      })
-      .replace(' ', 'T'),
-    answers: results.value.map((r) => ({
-      question_id: r.question_id,
-      option_id: r.option_id,
+    answers: results.value.map((result) => ({
+      question_id: result.question_id,
+      option_id: result.option_id,
     })),
   }
 
   const response = await quizStore.submit(quiz.value.code, payload)
 
-  if (response.success) {
-    toast.success(response.message)
+  console.log(response.data)
 
-    // Navigate to success page
+  if (response.status === 200) {
     router.push({
       name: 'quiz.success',
-      params: { code: response.data?.quiz?.code },
       query: {
-        score: response.data.score,
-        time: response.data.duration_formatted,
-        status: response.status,
+        score: response.data.data.score,
+        time: response.data.data.duration_formatted,
+        status: response.data.data.status,
+        allow_blank: response.data.data.allow_blank,
+        answers: JSON.stringify(response.data.data.answers),
       },
     })
   }
@@ -145,10 +138,9 @@ const submit = async () => {
 
 // --- Option Styles ---
 const choiceClass = (index) => {
-  if (!answered.value) return 'cursor-pointer border-gray-300 hover:border-indigo-400'
   return selectedIndex.value === index
-    ? 'border-indigo-500 bg-indigo-50 cursor-pointer'
-    : 'border-gray-300 cursor-not-allowed'
+    ? 'border-indigo-500 bg-indigo-100 cursor-pointer'
+    : 'border-gray-300 hover:border-indigo-400 cursor-pointer'
 }
 
 // --- Lifecycle ---
@@ -169,9 +161,10 @@ onMounted(() => loadQuiz())
           <div class="text-sm text-gray-600">
             সময় বাকি: <span class="font-semibold text-red-600">{{ formattedTime }}</span>
           </div>
-          <div class="text-xs text-gray-500 mt-1">
-            প্রশ্ন {{ currentIndex + 1 }} / {{ questions.length }} | স্কোর:
-            <span class="font-semibold text-primary">{{ score }}</span>
+          <div class="text-xs text-gray-500">
+            <span class="font-semibold text-primary"
+              >প্রশ্ন {{ currentIndex + 1 }} / {{ questions.length }}
+            </span>
           </div>
         </div>
       </header>
@@ -199,8 +192,6 @@ onMounted(() => loadQuiz())
                 {{ currentQuestion.mark }} পয়েন্ট
               </span>
             </div>
-
-            <!-- <h3 class="font-bold">প্রশ্ন {{ currentQuestion }}: {{ currentQuestion.text }}</h3> -->
           </div>
 
           <!-- Options -->
@@ -210,23 +201,24 @@ onMounted(() => loadQuiz())
                 class="w-full text-left p-4 rounded-xl border transition focus:outline-none flex items-center justify-between"
                 :class="choiceClass(index)"
                 @click="select(index)"
-                :disabled="answered"
               >
                 <div class="flex items-center gap-2 truncate">
                   <span class="font-semibold">{{ choice.label }}.</span>
                   <MathJax :content="choice.content" />
                 </div>
-
-                <div v-if="quiz.shuffle">
-                  <span v-if="answered && choice.is_correct" class="text-green-600 font-bold"
-                    >✔</span
-                  >
-                  <span
-                    v-if="answered && selectedIndex === index && !choice.is_correct"
-                    class="text-red-600 font-bold"
-                    >✘</span
-                  >
-                </div>
+                <svg
+                  v-if="selectedIndex === index"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-green-600"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
               </button>
             </li>
           </ul>

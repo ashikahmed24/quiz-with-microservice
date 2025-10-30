@@ -116,7 +116,7 @@ export const useQuizStore = defineStore('quiz', {
       try {
         const response = await apiClient.post(`/api/quizzes/${quiz}/submit`, payload)
         if (response.status === 200) {
-          return Promise.resolve(response.data)
+          return Promise.resolve(response)
         }
       } catch (error) {
         if (error.response) {

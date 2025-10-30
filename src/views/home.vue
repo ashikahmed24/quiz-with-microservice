@@ -9,7 +9,7 @@ import { RouterLink } from 'vue-router'
     <!-- Hero Section -->
     <div class="text-center max-w-2xl">
       <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-        Test Your Knowledge with <span class="text-primary">QuizBD</span>
+        Test Your Knowledge with <span class="text-primary">Quiz</span>
       </h1>
       <p class="text-gray-600 text-lg md:text-xl mb-8">
         Challenge yourself, compete with friends, and climb the leaderboard!
@@ -18,7 +18,7 @@ import { RouterLink } from 'vue-router'
         to="/"
         class="inline-block bg-primary text-white px-8 py-3 rounded-full font-medium hover:bg-primary-hover transition duration-300"
       >
-        Start a Quiz
+        Get Started
       </RouterLink>
     </div>
 
@@ -45,7 +45,7 @@ import { RouterLink } from 'vue-router'
 
     <!-- Footer -->
     <footer class="mt-16 text-gray-500 text-sm">
-      © {{ new Date().getFullYear() }} QuizBD — All rights reserved.
+      © {{ new Date().getFullYear() }} Quiz — All rights reserved.
     </footer>
   </div>
 </template>
