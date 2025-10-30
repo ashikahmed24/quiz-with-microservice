@@ -1,98 +1,129 @@
 <script setup>
 import MathJax from '@/components/MathJax.vue'
 import { ref } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const data = ref({})
 
-// Get quiz result from query params
-const score = route.query.score
-const time = route.query.time
-const allow_blank = route.query.allow_blank
-
-const answers = ref([])
-
-if (route.query.answers) {
+// Parse data from query
+if (route.query.data) {
   try {
-    answers.value = JSON.parse(route.query.answers)
-  } catch (e) {
-    answers.value = []
+    data.value = JSON.parse(route.query.data)
+  } catch {
+    data.value = {}
   }
 }
 </script>
 
 <template>
-  <div
-    class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4 relative"
-  >
-    <div
-      class="bg-white rounded-xl p-8 max-w-md w-full text-center border border-indigo-100 relative overflow-hidden"
-    >
-      <div class="flex justify-center mb-6">
-        <div
-          class="h-24 w-24 rounded-full bg-green-100 flex items-center justify-center animate-bounce"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-12 w-12 text-green-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
+  <main class="min-h-screen bg-indigo-50 px-4 py-6">
+    <div class="max-w-3xl mx-auto bg-white rounded-xl px-4 py-6">
+      <header class="p-6">
+        <div class="text-center space-y-4">
+          <div
+            class="inline-block bg-green-100 text-green-800 text-sm font-medium px-4 py-1 rounded-full tracking-wide animate-bounce print:animate-none print:bg-gray-200"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-      </div>
+            কুইজ সম্পন্ন হয়েছে
+          </div>
 
-      <h2 class="text-2xl font-bold text-gray-800 mb-2">🎉 Quiz Submitted!</h2>
-      <p class="text-gray-600 mb-6">Your result is ready. Check your score and time taken below.</p>
+          <h4 class="text-3xl md:text-5xl font-extrabold leading-tight">
+            অভিনন্দন! আপনি কুইজটি সম্পন্ন করেছেন
+          </h4>
 
-      <div class="bg-indigo-50 rounded-xl p-4 mb-6 space-y-2">
-        <div class="flex justify-between text-gray-700 text-lg font-medium">
-          <span>Score:</span>
-          <span class="font-bold text-indigo-600">{{ score }}</span>
-        </div>
-        <div class="flex justify-between text-gray-700 text-lg font-medium">
-          <span>Duration:</span>
-          <span class="font-bold text-indigo-600">{{ time }}</span>
-        </div>
-      </div>
+          <!-- Stats Section -->
+          <div
+            class="flex flex-wrap justify-center gap-4 mt-6 print:flex-col print:items-start print:gap-2"
+          >
+            <!-- Total Questions -->
+            <button
+              class="bg-green-50 text-green-800 px-4 py-2 rounded-xl flex items-center gap-2 transition"
+            >
+              <span class="text-sm font-medium">মোট প্রশ্ন</span>
+              <strong class="text-sm">{{ data.correct + data.wrong }}</strong>
+            </button>
 
-      <div class="w-full text-center space-x-4">
-        <RouterLink :to="{ name: 'home' }" class="base__button">Go to Home</RouterLink>
-        <button class="base__outline">Retry Quiz</button>
+            <!-- Correct Answers -->
+            <button
+              class="bg-blue-50 text-blue-800 px-4 py-2 rounded-xl flex items-center gap-2 transition"
+            >
+              <span class="text-sm font-medium">সঠিক উত্তর</span>
+              <strong class="text-sm">{{ data.correct }}</strong>
+            </button>
+
+            <!-- Wrong Answers -->
+            <button
+              class="bg-red-50 text-red-800 px-4 py-2 rounded-xl flex items-center gap-2 transition"
+            >
+              <span class="text-sm font-medium">ভুল উত্তর</span>
+              <strong class="text-sm">{{ data.wrong }}</strong>
+            </button>
+
+            <!-- Duration -->
+            <button
+              class="bg-yellow-50 text-yellow-800 px-4 py-2 rounded-xl flex items-center gap-2 transition"
+            >
+              <span class="text-sm font-medium">সময়</span>
+              <strong class="text-sm">{{ data.duration_formatted }}</strong>
+            </button>
+
+            <!-- Score -->
+            <button
+              class="bg-purple-50 text-purple-800 px-4 py-2 rounded-xl flex items-center gap-2 transition"
+            >
+              <span class="text-sm font-medium">স্কোর</span>
+              <strong class="text-sm">{{ data.score }}</strong>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="space-y-4">
+        <div
+          v-for="answer in data.answers || []"
+          :key="answer.id"
+          class="bg-white p-5 rounded-xl border border-border"
+        >
+          <div class="flex flex-col md:flex-row justify-between gap-4">
+            <!-- QA -->
+            <div class="flex-1 space-y-2">
+              <div class="flex flex-wrap items-start gap-2">
+                <span class="font-semibold">Question:</span>
+                <RenderMath :content="answer.question.content" />
+              </div>
+              <div class="flex flex-wrap items-start gap-2">
+                <span class="font-semibold">Answer:</span>
+                <RenderMath
+                  :content="answer.option?.content || answer.text_answer || 'No answer'"
+                />
+              </div>
+              <div v-if="answer.question.explanation" class="flex flex-wrap items-start gap-2">
+                <span class="font-semibold">Explanation:</span>
+                <RenderMath :content="answer.question.explanation" />
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="text-sm flex-none flex md:flex-col items-end justify-between gap-2">
+              <span
+                :class="
+                  answer.is_correct ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'
+                "
+              >
+                {{ answer.is_correct ? 'Correct' : 'Wrong' }}
+              </span>
+              <span
+                :class="
+                  answer.is_correct ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'
+                "
+                >Marks: {{ answer.marks_obtained }}</span
+              >
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div v-if="route.query.allow_blank === 'true'" class="max-w-3xl w-full mx-auto my-6">
-      <div
-        v-for="answer in answers"
-        :key="answer.id"
-        class="bg-white p-4 border border-border rounded mb-3"
-      >
-        <div class="flex items-start gap-2">
-          <strong>Question:</strong> <MathJax :content="answer.question.content" />
-        </div>
-        <div class="flex items-start gap-2">
-          <strong>Your Answer:</strong>
-          <MathJax :content="answer.option?.content || answer.text_answer || 'No answer'" />
-        </div>
-        <div class="flex items-start gap-2">
-          <strong>Correct:</strong>
-          <span :class="answer.is_correct ? 'text-green-600' : 'text-red-600'">
-            {{ answer.is_correct ? 'Yes' : 'No' }}
-          </span>
-        </div>
-        <div class="flex items-start gap-2">
-          <strong>Marks:</strong> {{ answer.marks_obtained }}
-        </div>
-        <div class="flex items-start gap-2" v-if="answer.question.explanation">
-          <strong>Explanation:</strong> <MathJax :content="answer.question.explanation" />
-        </div>
-      </div>
-    </div>
-  </div>
+  </main>
 </template>
 
 <style scoped>
@@ -102,7 +133,7 @@ if (route.query.answers) {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10%);
+    transform: translateY(-5%);
   }
 }
 .animate-bounce {

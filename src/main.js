@@ -1,4 +1,5 @@
 import './assets/main.css'
+import RenderMath from './components/RenderMath.vue'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -27,4 +28,5 @@ app.use(pinia)
 app.use(router)
 app.use(Toast, options)
 app.component('Pagination', Vueginate)
+app.component('RenderMath', RenderMath)
 app.mount('#app')

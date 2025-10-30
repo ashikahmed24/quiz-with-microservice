@@ -4,7 +4,7 @@ import { useQuizStore } from '@/stores/quiz'
 import { useRoute, useRouter } from 'vue-router'
 import AuthOverlay from '@/components/AuthOverlay.vue'
 import { useAuthStore } from '@/stores/auth'
-import MathJax from '@/components/MathJax.vue'
+
 const authStore = useAuthStore()
 const quizStore = useQuizStore()
 const route = useRoute()

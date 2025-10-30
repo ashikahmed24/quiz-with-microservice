@@ -126,11 +126,7 @@ const submit = async () => {
     router.push({
       name: 'quiz.success',
       query: {
-        score: response.data.data.score,
-        time: response.data.data.duration_formatted,
-        status: response.data.data.status,
-        allow_blank: response.data.data.allow_blank,
-        answers: JSON.stringify(response.data.data.answers),
+        data: JSON.stringify(response.data.data),
       },
     })
   }
@@ -149,7 +145,9 @@ onMounted(() => loadQuiz())
 </script>
 
 <template>
-  <div class="min-h-screen bg-[url(/bg-quiz.jpg)] bg-cover flex items-center justify-center p-4">
+  <div
+    class="min-h-screen bg-gradient-to-r from-indigo-600 to-purple-600 bg-cover flex items-center justify-center p-4"
+  >
     <div class="w-full bg-gray-100 max-w-3xl p-6 rounded-xl">
       <!-- Header -->
       <header class="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -185,7 +183,7 @@ onMounted(() => loadQuiz())
             <div class="flex flex-wrap items-start justify-between">
               <div class="flex flex-wrap gap-2">
                 <h3 class="font-normal">প্রশ্নঃ</h3>
-                <MathJax :content="currentQuestion.text" />
+                <RenderMath :content="currentQuestion.text" />
               </div>
 
               <span class="px-4 py-1 bg-indigo-100 text-primary rounded-full text-sm font-medium">
@@ -204,7 +202,7 @@ onMounted(() => loadQuiz())
               >
                 <div class="flex items-center gap-2 truncate">
                   <span class="font-semibold">{{ choice.label }}.</span>
-                  <MathJax :content="choice.content" />
+                  <RenderMath :content="choice.content" />
                 </div>
                 <svg
                   v-if="selectedIndex === index"
