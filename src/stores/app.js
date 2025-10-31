@@ -19,7 +19,6 @@ export const useAppStore = defineStore('app', {
           return Promise.resolve(response)
         }
       } catch (error) {
-        toast.error(error.response.data.message)
         return Promise.reject(error.response)
       }
     },
