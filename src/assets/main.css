@@ -136,6 +136,9 @@
    @apply bg-primary text-white hover:text-white hover:bg-primary;
  }
 
+ .form__inline{
+  @apply flex items-center gap-2;
+ }
   .form__group {
     @apply relative block mb-2 text-left;
   }

@@ -8,6 +8,7 @@ import { useRoute } from 'vue-router'
 import IconX from '@/components/icons/IconX.vue'
 import { debounce } from 'lodash'
 import IconLoading from '@/components/icons/IconLoading.vue'
+import BaseEditableInput from '@/components/BaseEditableInput.vue'
 
 const quizStore = useQuizStore()
 const questionStore = useQuestionStore()
@@ -86,7 +87,7 @@ const toggleCorrectAnswer = (questionId, optionId) => {
 const addChoice = (questionId) => {
   const q = questions.value.find((q) => q.id === questionId)
   if (!q) return
-  q.options.push({ id: crypto.randomUUID(), content: '', is_correct: false })
+  q.options.push({ id: crypto.randomUUID(), content: 'Option', is_correct: false })
   autoSave(q)
 }
 
@@ -149,7 +150,7 @@ const updateQuestionType = (question) => {
       ]
       break
     default:
-      question.options = [{ id: crypto.randomUUID(), content: '', is_correct: false }]
+      question.options = [{ id: crypto.randomUUID(), content: 'Option', is_correct: false }]
   }
   autoSave(question)
 }
@@ -228,36 +229,17 @@ onMounted(() => {
             <!-- Question Header -->
             <div class="flex items-end justify-between gap-4 mb-4">
               <div class="grow">
-                <div class="form__group">
-                  <label class="form__label">
-                    {{ index + 1 }}. Question: {{ question.content }}</label
-                  >
-                  <input
-                    type="text"
+                <div class="form__inline">
+                  <label class="form__label bg-gray-100 rounded px-6 py-4"> {{ index + 1 }}</label>
+                  <BaseEditableInput
                     v-model="question.content"
                     @input="autoSave(question)"
                     placeholder="Write question..."
-                    class="form__control"
                   />
                 </div>
               </div>
 
               <div class="flex gap-2 items-center">
-                <!-- Type -->
-                <div class="form__group">
-                  <label class="form__label">Type</label>
-                  <select
-                    v-model="question.type"
-                    @change="updateQuestionType(question)"
-                    class="form__control"
-                  >
-                    <option value="mcq">Multiple Choice</option>
-                    <option value="true_false">True / False</option>
-                    <option value="short_answer">Short Answer</option>
-                    <option value="fill_blank">Fill Blank</option>
-                  </select>
-                </div>
-
                 <!-- Marks -->
                 <div class="form__group w-20">
                   <label class="form__label">Mark</label>
@@ -280,22 +262,19 @@ onMounted(() => {
                 class="flex items-center gap-4 mb-2"
               >
                 <input
-                  v-if="question.type === 'mcq' || question.type === 'true_false'"
                   type="radio"
                   :name="'q' + question.id"
                   :checked="option.is_correct"
                   @change="toggleCorrectAnswer(question.id, option.id)"
                   class="form__radio"
                 />
-                <input
-                  type="text"
+                <BaseEditableInput
                   v-model="option.content"
                   @input="updateChoice(question.id, option.id, $event.target.value)"
-                  class="form__control"
                   :placeholder="`Option ${String.fromCharCode(65 + oIndex)}`"
                 />
+
                 <button
-                  v-if="question.type === 'mcq'"
                   @click.prevent="removeChoice(question.id, option.id)"
                   class="bg-gray-100 text-danger p-2.5 rounded cursor-pointer"
                 >
@@ -314,22 +293,34 @@ onMounted(() => {
                 />
                 Add Explanation
               </label>
-              <button
-                v-if="question.type === 'mcq'"
-                @click.prevent="addChoice(question.id)"
-                class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-primary-hover cursor-pointer"
-              >
-                Add Choice
-              </button>
+              <div class="flex gap-2 items-center whitespace-nowrap">
+                <!-- Type -->
+                <select
+                  v-model="question.type"
+                  @change="updateQuestionType(question)"
+                  class="border border-border px-3 py-1.5 text-sm rounded cursor-pointer focus:outline-none"
+                >
+                  <option value="mcq">Multiple Choice</option>
+                  <option value="true_false">True / False</option>
+                  <option value="short_answer">Short Answer</option>
+                  <option value="fill_blank">Fill Blank</option>
+                </select>
+                <button
+                  @click.prevent="addChoice(question.id)"
+                  class="px-3 py-1.5 bg-primary text-white text-sm rounded hover:bg-primary-hover cursor-pointer"
+                >
+                  Add Choice
+                </button>
+              </div>
             </div>
 
-            <textarea
-              v-if="question.hasExplanation"
-              v-model="question.explanation"
-              @input="autoSave(question)"
-              class="form__control mt-2"
-              placeholder="Write explanation..."
-            ></textarea>
+            <div v-if="question.hasExplanation" class="py-2">
+              <BaseEditableInput
+                v-model="question.explanation"
+                @input="autoSave(question)"
+                placeholder="Write explanation..."
+              />
+            </div>
           </div>
 
           <!-- Add Question / Submit -->
